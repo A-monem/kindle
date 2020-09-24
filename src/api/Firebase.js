@@ -17,65 +17,26 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 firebase.analytics();
 
-export const auth = firebase.auth();
-export const firestore = firebase.firestore();
+const auth = firebase.auth();
+const firestore = firebase.firestore();
 
-export const getStudents = () => {
+export const firebaseAddUser = (type, firstName, lastName, email, password) => {
   return new Promise((resolve, reject) => {
-    firestore.collection("users").where("type", '==', 'student')
-      .onSnapshot((snapshot) => {
-        let updatedData = snapshot.docs.map(doc => doc.data())
-        resolve(updatedData)
-    }, reject)
-  })
-}
+    console.log(email)
 
-export const addStudent = (student) => {
-    student['type'] = 'student'
-    return new Promise((resolve, reject) => {
-      auth.createUserWithEmailAndPassword(student.email, "student123")
-        .then((user) => {
-          firestore.collection("users").doc(user.user.uid).set(student)
-          resolve()
+    auth.createUserWithEmailAndPassword(email, password)
+      .then(() => {
+        firestore.collection('users').doc(auth.currentUser.uid).set({
+          firstName,
+          lastName,
+          type, 
+          email
         })
-        .catch(function(error) {
-          console.log("error creating a user", error)
-          reject()``
-    });
-    })
-}
-
-export const updateStudent = (student) => {
-    student['type'] = 'student'
-    return new Promise((resolve, reject) => {
-      try{
-        firestore.collection("users").where("email", '==', student.email).get()
-          .then((snapshot) => {
-            const id = snapshot.docs.map(doc => doc.id)
-            firestore.collection("users").doc(id[0]).update(student)
-            resolve()
-        })
-      } catch(e){
-        console.log(e)
-        reject()
-      }
-  })
-}
-
-export const deleteStudent = (student) => {
-  return new Promise((resolve, reject) => {
-    try{
-      firestore.collection("users").where("email", '==', student.email).get()
-        .then((snapshot) => {
-          const id = snapshot.docs.map(doc => doc.id)
-          firestore.collection("users").doc(id[0]).delete()
-            .then(() => {
-              resolve()
-            })
+        resolve()
       })
-    } catch(e){
-      console.log(e)
-      reject()
-    }
+      .catch(function(error) {
+        reject(error)
+        //console.log(error)
+    })
   })
 }

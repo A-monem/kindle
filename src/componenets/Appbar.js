@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react'
-import { AppBar, Toolbar, IconButton, Menu, MenuItem, Typography, Button } from '@material-ui/core'
+import { AppBar, Toolbar, IconButton, Menu, MenuItem, Typography, Button, Link} from '@material-ui/core'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { UserContext } from '../context/UserContext'
 import { ThemeContext } from '../context/ThemeContext'
@@ -7,7 +7,7 @@ import AccountCircle from '@material-ui/icons/AccountCircle';
 import DarkModeToggle from "react-dark-mode-toggle";
 import { withRouter } from "react-router";
 
-function Appbar({ history }) {
+export function Appbar({ history }) {
     const theme = useTheme()
     const { user, addUser } = useContext(UserContext)
     const { darkMode, toggleTheme } = useContext(ThemeContext)
@@ -53,10 +53,12 @@ function Appbar({ history }) {
         <AppBar position="static" className={classes.appBar}>
             <Toolbar>
                 <IconButton edge="start" color="inherit" aria-label="menu" onClick={() => console.log("icon clicked")}>
-                    <img src={`./logo_4.png`} alt={'logo'} className={classes.logo} />
+                    <img src={require('../images/logo.png')} alt={'logo'} className={classes.logo} id='navbarLogo'/>
                 </IconButton>
                 <Typography variant="h6" className={classes.title}>
-                    Kindle
+                    <Link href="/" onClick={() => history.push('/')} underline='none'>
+                        Kindle
+                    </Link>
                 </Typography>
              
                 <DarkModeToggle

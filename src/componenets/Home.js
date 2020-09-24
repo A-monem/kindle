@@ -14,7 +14,6 @@ export default function Home({ history }){
             flexDirection: 'column',
             justifyContent: 'flex-start',
             alignItems: 'center',
-
         },
     }))
 

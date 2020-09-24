@@ -7,30 +7,11 @@ export default function Signup({ history }){
     const theme = useTheme()
     const useStyles = makeStyles(() => ({
         root: {
-            width: '100%',
-            height: '100%',
-            display: 'flex', 
+            display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'flex-start', 
+            justifyContent: 'center',
             alignItems: 'center',
-            
-        },
-        logo: {
-            width: theme.spacing(30),
-            height: theme.spacing(30),
-            marginTop: theme.spacing(10)
-        },
-        signupOptionsBox: {
-            width: theme.spacing(70),
-            height: theme.spacing(40),
-            margin: theme.spacing(2)
-        },
-        signupOptionsPaper: {
-            display: 'flex', 
-            flexDirection: 'column',
-            justifyContent: 'center', 
-            alignItems: 'center',
-            margin: theme.spacing(2)
+            flexGrow: 1
         },
         margin:{
             margin: theme.spacing(1)
@@ -41,7 +22,12 @@ export default function Signup({ history }){
 
     return (
         <div className={classes.root}>
-            <Typography>Signup Worker</Typography>
+            <Paper>
+                <div>
+                    <Typography>Worker</Typography>
+                </div>
+               
+            </Paper>
         </div>
     );
 }
