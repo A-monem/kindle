@@ -21,6 +21,29 @@ export default class ThemeContextProvider extends Component{
               primary: orange,
               secondary: grey,
               type: this.state.darkMode ? 'dark' : 'light'
+            },
+            typography: {
+                button: {
+                  textTransform: 'none'
+                }
+            },
+            props: {
+                MuiRadio: {
+                    size: 'small',
+                    color: 'primary'
+                },
+            },
+            overrides: {
+                MuiFormControlLabel: {
+                    root: {
+                        // padding: '1rem', 
+                        height: '1.5rem'
+                    },
+                    label: {
+                        fontSize: '0.8rem',
+                        
+                    }
+                },
             }
         })
 

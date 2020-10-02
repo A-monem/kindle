@@ -1,11 +1,12 @@
-import React, { useContext, useState } from 'react'
-import { AppBar, Toolbar, IconButton, Menu, MenuItem, Typography, Button, Link} from '@material-ui/core'
+import React, { useContext, useState, useEffect} from 'react'
+import { AppBar, Toolbar, IconButton, Menu, MenuItem, Typography, Button } from '@material-ui/core'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { UserContext } from '../context/UserContext'
 import { ThemeContext } from '../context/ThemeContext'
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import DarkModeToggle from "react-dark-mode-toggle";
 import { withRouter } from "react-router";
+import { firebaseLogout } from '../api/Firebase'
 
 export function Appbar({ history }) {
     const theme = useTheme()
@@ -23,12 +24,15 @@ export function Appbar({ history }) {
     };
     
     const handleSignOut = () => {
-        // auth.signOut().then(() => {
-        //     addUser(null)
-        //     addTimetable(null)
-        // }).catch(function(error) {
-        //     console.log(error)
-        // });
+        firebaseLogout()
+        .then(() => {
+            addUser(null)
+            setAnchorEl(null)
+            history.replace('./')
+        })
+        .catch(function(error) {
+            console.log(error)
+        });
     }
     
     const useStyles = makeStyles(() => ({
@@ -52,15 +56,12 @@ export function Appbar({ history }) {
     return (
         <AppBar position="static" className={classes.appBar}>
             <Toolbar>
-                <IconButton edge="start" color="inherit" aria-label="menu" onClick={() => console.log("icon clicked")}>
-                    <img src={require('../images/logo.png')} alt={'logo'} className={classes.logo} id='navbarLogo'/>
-                </IconButton>
-                <Typography variant="h6" className={classes.title}>
-                    <Link href="/" onClick={() => history.push('/')} underline='none'>
-                        Kindle
-                    </Link>
-                </Typography>
-             
+                <div className={classes.title}>
+                    <IconButton edge="start" color="inherit" aria-label="menu" onClick={() => console.log("icon clicked")}>
+                        <img src={require('../images/logo.png')} alt={'logo'} className={classes.logo} id='navbarLogo'/>
+                    </IconButton>
+                    <Button color="primary" onClick={() => history.replace('/')}>Kindle</Button>
+                </div>
                 <DarkModeToggle
                     onChange={toggleTheme}
                     checked={darkMode}
@@ -69,7 +70,7 @@ export function Appbar({ history }) {
                 {user
                     ?
                     <>
-                        <Typography className={classes.margin}>Kindle</Typography>
+                        <Typography className={classes.margin}>{user.firstName} {user.lastName}</Typography>
                         <IconButton
                             aria-label="account of current user"
                             aria-controls="menu-appbar"
@@ -100,7 +101,9 @@ export function Appbar({ history }) {
                     </>
                     :
                     <>
-                        <Button variant="outlined" size="small" className={classes.margin} style={{textTransform: "none"}}>
+                        <Button variant="outlined" size="small" className={classes.margin} 
+                        style={{textTransform: "none"}}
+                        onClick={() => history.push('/signin')}>
                             Sign in
                         </Button>
                         <Button variant="outlined" size="small" 
@@ -110,11 +113,9 @@ export function Appbar({ history }) {
                         </Button>
                     </>
                 }
-           
             </Toolbar>
         </AppBar>
     )
-
 }
 
 export const AppbarWithRouter = withRouter(Appbar)
