@@ -26,7 +26,7 @@ export default function Signin({ history }) {
     const [open, setOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState('')
 
-    const { addUser } = useContext(UserContext)
+    const { addUser, addPassword} = useContext(UserContext)
     const theme = useTheme()
 
     const useStyles = makeStyles(() => ({
@@ -73,6 +73,7 @@ export default function Signin({ history }) {
         firebaseLogin(email, password)
             .then((user) => {
                 addUser(user)
+                addPassword(password)
                 history.push('/dashboard')
             })
             .catch((error) => {

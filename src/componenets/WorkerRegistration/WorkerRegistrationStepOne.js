@@ -1,22 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext} from 'react';
 import { Typography, Button, Paper, Avatar, RadioGroup, Radio, FormControlLabel, TextareaAutosize, ListItemSecondaryAction, ListItemAvatar, 
     TextField, MenuItem, IconButton, Icon, List, ListItemText, ListItem, Grid, Modal, Snackbar, LinearProgress} from '@material-ui/core'
 import Alert from '@material-ui/lab/Alert';
-import {  MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers'
+import {  MuiPickersUtilsProvider, KeyboardDatePicker, DatePicker } from '@material-ui/pickers'
 import DateFnsUtils from '@date-io/date-fns';
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import languages from 'language-list'
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever'
-import GoogleApiWrapper, { setCoordinates } from './Map'
-import { firebaseRecaptchaGenerator, firebaseSendVerificationCode, firebaseAddUserPersonalInfo, storage, auth} from '../api/Firebase'
+import GoogleApiWrapper from '../Map'
+import { firebaseRecaptchaGenerator, firebaseSendVerificationCode, firebaseAddUserPersonalInfo, firebaseLogin, storage, auth} from '../../api/Firebase'
 import { getNames } from 'country-list'
+import { UserContext } from '../../context/UserContext'
 
-export default function ClientRegistrationStepOne({ activeStep, setActiveStep }) {
+export default function WorkerRegistrationStepOne({ activeStep, setActiveStep }) {
     const [openError, setOpenError] = useState(false)
     const [openSuccess, setOpenSuccess] = useState(false)
     const [message, setMessage] = useState('')
     const [photo, setPhoto] = useState(null)
-    const [profilrPictureUrl, setProfilePictureUrl] = useState(null)
+    const [profilePictureUrl, setProfilePictureUrl] = useState(null)
     const [progress, setProgress] = React.useState(0);
     const [languageList, setLanguageList] = useState(['English'])
     const [languageHolder, setLanguageHolder] = useState('')
@@ -49,9 +50,55 @@ export default function ClientRegistrationStepOne({ activeStep, setActiveStep })
         script.onload = loadWidget
         document.body.appendChild(script);
 
+        console.log(user)
+
+        if (user.profilePictureUrl) {
+            setProfilePictureUrl(user.profilePictureUrl)
+        }
+
+        if (user.languages) {
+            setLanguageList(user.languages)
+        }
+
+        if (user.address) {
+            setAddress1(user.address.address1)
+            setAddress2(user.address.address2)
+            setSuburb(user.address.suburb)
+            setStateAus(user.address.stateAus)
+            setPostalCode(user.address.postalCode)
+        }
+
+        if (user.mobileNumber) {
+            setMobileNumber(user.mobileNumber)
+            setMobileNumberVerified(true)
+        }
+
+        if (user.emergency){
+            setEmergencyName(user.emergency.emergencyName)
+            setEmergencyMobileNumber(user.emergency.emergencyMobileNumber)
+        }
+
+        if (user.gender) {
+           setGender(user.gender)
+        }
+
+        if(user.birthday){
+            console.log(new Date(user.birthday))
+            setBirthday(new Date(user.birthday))
+        }
+
+        if(user.birthCountry){
+            setBirthCountry(user.birthCountry)
+        }
+
+        if(user.biograpghy){
+            setBio(user.biograpghy)
+        }
+
     }, [])
 
     const theme = useTheme()
+    const { user, addUser, password} = useContext(UserContext)
 
     const useStyles = makeStyles(() => ({
         root: {
@@ -197,7 +244,6 @@ export default function ClientRegistrationStepOne({ activeStep, setActiveStep })
 
     const handleAddPhoto = (e) => {
         if (e.target.files[0]){
-            console.log(e.target.files[0])
             setPhoto(e.target.files[0])
         }
     }
@@ -216,7 +262,6 @@ export default function ClientRegistrationStepOne({ activeStep, setActiveStep })
         () => {
            uploadPhoto.snapshot.ref.getDownloadURL()
             .then((url) => {
-                console.log({url})
                 setProfilePictureUrl(url)
             })
             .catch((error) => {
@@ -242,7 +287,6 @@ export default function ClientRegistrationStepOne({ activeStep, setActiveStep })
     }
 
     const handleDeleteLanguage = (language) => {
-        console.log(language)
         const arr = languageList.filter(lang => lang !== language)
         setLanguageList(arr)
     }
@@ -256,7 +300,6 @@ export default function ClientRegistrationStepOne({ activeStep, setActiveStep })
         );
         
         widget.on('result:select', (fullAddress, metaData) => {
-            console.log(metaData)
             setAddress1(metaData.address_line_1)
             setAddress2(metaData.address_line_2)
             setSuburb(metaData.locality_name)
@@ -264,7 +307,6 @@ export default function ClientRegistrationStepOne({ activeStep, setActiveStep })
             setPostalCode(metaData.postcode)
             setLong(metaData.longitude)
             setLat(metaData.latitude)
-           // setCoordinates(metaData.latitude, metaData.longitude)
       });
     }
 
@@ -274,7 +316,6 @@ export default function ClientRegistrationStepOne({ activeStep, setActiveStep })
         const regex = /04[\d]{8}/
         if (mobileNumber.match(regex)){
             const intMobileNumber = `+61${mobileNumber.slice(1, 10)}`
-            console.log(intMobileNumber)
             firebaseSendVerificationCode(intMobileNumber, appVerifier)
                 .then(() => {
                     setOpenMobileVerificationModal(true)
@@ -294,6 +335,7 @@ export default function ClientRegistrationStepOne({ activeStep, setActiveStep })
         const confirmationResult = window.confirmationResult
         confirmationResult.confirm(verificationCode)
             .then((result) => {
+                firebaseLogin(user.email, password)
                 setOpenMobileVerificationModal(false)
                 setVerificationCode(null)
                 setMobileNumberVerified(true)
@@ -331,10 +373,15 @@ export default function ClientRegistrationStepOne({ activeStep, setActiveStep })
             emergencyName, 
             emergencyMobileNumber
         }
+
+        const birthdayMilliseconds = birthday.getTime()
+        
+        //Needs to be changed back to check
         if (true) {
-            firebaseAddUserPersonalInfo(profilrPictureUrl, languageList, address, mobileNumber, emergency, gender, birthday, birthCountry, bio)
-            .then(() => {
-                setActiveStep((prevActiveStep) => prevActiveStep + 1);
+            firebaseAddUserPersonalInfo(profilePictureUrl, languageList, address, mobileNumber, emergency, gender, birthdayMilliseconds, birthCountry, bio)
+            .then((user) => {
+                addUser(user)
+                setActiveStep((prevActiveStep) => prevActiveStep + 1)
             })
             .catch((error) => {
                 setMessage(error)
@@ -348,7 +395,7 @@ export default function ClientRegistrationStepOne({ activeStep, setActiveStep })
     };
 
     const checkFields = () => {
-        if (photo) {
+        if (profilePictureUrl) {
             if (languageList){
                 if (address1 && suburb && stateAus && postalCode) {
                     if (mobileNumber && mobileNumberVerified){
@@ -426,7 +473,7 @@ export default function ClientRegistrationStepOne({ activeStep, setActiveStep })
                         </div>
                     </Grid>
                     <Grid item xs={6} className={classes.avatar}>
-                        <img alt="Profile Picture" src={profilrPictureUrl? profilrPictureUrl: './user.png'}
+                        <img alt="Profile Picture" src={profilePictureUrl? profilePictureUrl: './user.png'}
                          style={{width: theme.spacing(30), height: theme.spacing(30), borderRadius: theme.spacing(15)}}/>
                     </Grid>
                 </Grid>
@@ -557,52 +604,59 @@ export default function ClientRegistrationStepOne({ activeStep, setActiveStep })
                     name='mobileNumber'
                     type='tel'
                     placeholder='0444888999'
+                    value={mobileNumber}
                     onChange={e => setMobileNumber(e.target.value)}
                 />
-                <Typography variant='caption'>Please verify your mobile number</Typography>
-                <div className={classes.mobileVerififcation}>
-                    <div id='recaptcha-container'></div>
-                    <Button 
-                        variant='contained' 
-                        color='primary'
-                        size='small'
-                        onClick={handleMobileVerification} 
-                    >
-                        Verifiy
-                    </Button>
-                </div>
-                <Modal
-                    open={openMobileVerificationModal}
-                    className={classes.mobileVerififcationModal}
-                    onClose={handleMobileVerificationClose}
-                    aria-labelledby='simple-modal-title'
-                    aria-describedby='simple-modal-description'
-                >
+                {!mobileNumberVerified 
+                ? (
                     <>
-                    <Paper className={classes.mobileVerififcationModalPaper}>
-                    <Typography variant='subtitle2'>A verification code has been sent as an SMS to your mobile number</Typography>
-                    <TextField
-                        size='small'
-                        variant='outlined'
-                        margin='normal'
-                        id='verificationCode'
-                        label='Enter Verification Code'
-                        name='verificationCode'
-                        placeholder='123456'
-                        onChange={e => setVerificationCode(e.target.value)}
-                    />
-                    <Button 
-                        variant='contained' 
-                        color='primary'
-                        size='small'
-                        onClick={handleMobileVerificationConfirmation} 
+                    <Typography variant='caption'>Please verify your mobile number</Typography>
+                    <div className={classes.mobileVerififcation}>
+                        <div id='recaptcha-container'></div>
+                        <Button 
+                            variant='contained' 
+                            color='primary'
+                            size='small'
+                            onClick={handleMobileVerification} 
+                        >
+                            Verifiy
+                        </Button>
+                    </div>
+                    <Modal
+                        open={openMobileVerificationModal}
+                        className={classes.mobileVerififcationModal}
+                        onClose={handleMobileVerificationClose}
+                        aria-labelledby='simple-modal-title'
+                        aria-describedby='simple-modal-description'
                     >
-                        Submit Code
-                    </Button>
-                    </Paper>
+                        <>
+                        <Paper className={classes.mobileVerififcationModalPaper}>
+                        <Typography variant='subtitle2'>A verification code has been sent as an SMS to your mobile number</Typography>
+                        <TextField
+                            size='small'
+                            variant='outlined'
+                            margin='normal'
+                            id='verificationCode'
+                            label='Enter Verification Code'
+                            name='verificationCode'
+                            placeholder='123456'
+                            onChange={e => setVerificationCode(e.target.value)}
+                        />
+                        <Button 
+                            variant='contained' 
+                            color='primary'
+                            size='small'
+                            onClick={handleMobileVerificationConfirmation} 
+                        >
+                            Submit Code
+                        </Button>
+                        </Paper>
+                        </>
+                    </Modal>
                     </>
-                </Modal>
-                
+                )
+                : <Typography variant='caption'>Mobile number has been verified</Typography>
+                }
             </div>
             <div className={classes.emergancy}>
                 <Typography variant='subtitle1' color='primary'>5) Who should we contact in case of emergency ?</Typography>
@@ -616,6 +670,7 @@ export default function ClientRegistrationStepOne({ activeStep, setActiveStep })
                     label='Full Name'
                     name='emergancyFullName'
                     placeholder='James Bond'
+                    value={emergencyName}
                     onChange={e => setEmergencyName(e.target.value)}
                 />
                 <TextField
@@ -629,24 +684,21 @@ export default function ClientRegistrationStepOne({ activeStep, setActiveStep })
                     name='emergencymobileNumber'
                     type='tel'
                     placeholder='0444888999'
+                    value={emergencyMobileNumber}
                     onChange={e => setEmergencyMobileNumber(e.target.value)}
                 />
             </div>
             <div style={{marginTop: theme.spacing(2)}}>
                 <Typography variant='subtitle1' color='primary'>6) What is your gender ?</Typography>
-                <RadioGroup onChange={(e) => {
-                    setGender(e.target.value)
-                }}>
+                <RadioGroup onChange={(e) => setGender(e.target.value)} value={gender}>
                     <FormControlLabel value='Male' control={<Radio color='primary' />} label='Male' />
                     <FormControlLabel value='Female' control={<Radio color='primary' />} label='Female' />
-                    <FormControlLabel value='Other' control={<Radio color='primary' />} label='Other' />
                 </RadioGroup>
             </div>
             <div style={{marginTop: theme.spacing(2)}}>
                 <Typography variant='subtitle1' color='primary'>7) What is your date of birth ?</Typography>
                 <MuiPickersUtilsProvider utils={DateFnsUtils}>
                     <KeyboardDatePicker
-                        disableToolbar
                         format='dd/MM/yyyy'
                         margin='normal'
                         id='date-picker-inline'
@@ -693,15 +745,15 @@ export default function ClientRegistrationStepOne({ activeStep, setActiveStep })
                         name='bio'
                         multiline
                         rows={7}
+                        value={bio}
                         onChange={e => setBio(e.target.value)}
                     />
                     </Grid>
                     <Grid item xs={6}>
                         <Typography variant='subtitle2' color='primary'>Example</Typography>
                         <Typography variant='body2'>
-                            I am looking for a great new support worker to help me with a bunch of my weekly activities, as well as some personal care activities to get ready in the morning. 
-                            I am 22 years old and my real passion is computer science. I have a lot of experience with computers and want to work as an IT technician on day. Apart from that I love to go to the movies and out with friends. 
-                            I have severe, spastic, quadriplegic cerebral palsy and I use wheelchair. I have some difficulties with communication, but once you get to understand me, we will get on just fine. 
+                        I'm an energetic, enthusiastic and reliable individual. I don’t have any experience in the disability sector, but I’d love to develop my skills and build relationships with people. I’m available for all types of work, especially getting out and about in the community. My particular passion is working with young adults in order to support growth, development, independence and autonomy.
+                        I love dreaming up unusual new recipes and laughing in good company. I'm also a big believer in the ability of all people to contribute to the community and hope to assist as many people as I can through Kindle.
                         </Typography>
                     </Grid>
                 </Grid>

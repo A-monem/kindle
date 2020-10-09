@@ -1,5 +1,4 @@
 import React from 'react'
-console.log(window.google)
 
 class Address extends React.Component {
     constructor(props) {

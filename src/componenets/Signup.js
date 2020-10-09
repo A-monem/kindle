@@ -151,7 +151,7 @@ export default function Signup({ history }) {
                                     setType(e.target.value)
                                 }}>
                                     <FormControlLabel value="client" control={<Radio color="primary" />} label="I am looking for support" />
-                                    <FormControlLabel value="worker" control={<Radio color="primary" />} label="I am a Support Worker" />
+                                    <FormControlLabel value="worker" control={<Radio color="primary" />} label="I am a support worker" />
                                 </RadioGroup>
                             </Box>
                             <TextField
@@ -210,11 +210,11 @@ export default function Signup({ history }) {
                             </Box>
                             <Typography variant="caption" display="block" gutterBottom>
                                 Read Kindle’s&nbsp;
-                            <Link href="#" onClick={() => console.log('link')} color="primary">
+                            <Link href="/terms" target = "_blank" color="primary">
                                 Terms of Use
                             </Link>
                             &nbsp;and&nbsp;
-                            <Link href="#" onClick={() => console.log('link')} color="primary">
+                            <Link href="/privacy" target = "_blank" color="primary">
                                 Privacy Policy
                             </Link>
                             .

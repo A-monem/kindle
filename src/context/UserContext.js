@@ -5,6 +5,7 @@ export const UserContext = createContext()
 export default class UserContextProvider extends Component{
     state = {
         user: null,
+        password: null
     }
 
     addUser = (user) => {
@@ -13,10 +14,16 @@ export default class UserContextProvider extends Component{
         })
     }
 
+    addPassword = (password) => {
+        this.setState({
+            password
+        })
+    }
+
     render() {
-        const { user } = this.state
+        const { user, password} = this.state
         return (
-            <UserContext.Provider value={{ user: user, addUser: this.addUser}}>
+            <UserContext.Provider value={{ user: user, addUser: this.addUser, password: password, addPassword: this.addPassword}}>
                 {this.props.children}
             </UserContext.Provider>
         )

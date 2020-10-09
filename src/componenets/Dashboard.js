@@ -7,12 +7,10 @@ import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { Redirect } from "react-router-dom"
 import { UserContext } from '../context/UserContext'
 import Registration from './Registration'
+import Timetable from './Timetabale'
 
 
 export default function Dashboard({ history }) {
-    // useEffect(() => {
-    //     if (!user)
-    // })
 
     const theme = useTheme()
     const { user } = useContext(UserContext)
@@ -27,24 +25,30 @@ export default function Dashboard({ history }) {
         },
         margin: {
             margin: theme.spacing(1)
+        }, 
+        paper: {
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            margin: theme.spacing(10),
+            padding: theme.spacing(5),
+            width: '80%',
+            Height: '100%'
         }
     }))
 
     const classes = useStyles()
 
     if (!user) {
-        // return <Redirect to={'/'} /> temporary
-        return <Registration />
+        return <Redirect to={'/signin'} />
+        //return <Registration />
     } else {
         if (!user.complete) {
-            return <Registration />
+            return <Registration history={history}/>
         } else {
-            return (<Paper>
-                <div>
-                    <Typography>Dashboard</Typography>
-                    <Button onClick={() => history.push('/')}>test</Button>
-                </div>
-            </Paper>)
+            return <Paper className={classes.paper}><Timetable/></Paper>
         }
     }
 }
+

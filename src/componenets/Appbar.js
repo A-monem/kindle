@@ -60,7 +60,17 @@ export function Appbar({ history }) {
                     <IconButton edge="start" color="inherit" aria-label="menu" onClick={() => console.log("icon clicked")}>
                         <img src={require('../images/logo.png')} alt={'logo'} className={classes.logo} id='navbarLogo'/>
                     </IconButton>
-                    <Button color="primary" onClick={() => history.replace('/')}>Kindle</Button>
+                    <Button color="primary" size='large' onClick={() => history.replace('/')}>Kindle</Button>
+                    {user
+                    ? (
+                        <div style={{marginLeft: theme.spacing(4), display: 'inline'}}>
+                        <Button color="primary" size='small' onClick={() => history.replace('/dashboard')}>Dashboard</Button>
+                        <Button color="primary" size='small' onClick={() => history.replace('/dashboard')}>Search</Button>
+                        <Button color="primary" size='small' onClick={() => history.replace('/dashboard')}>Bookings</Button>
+                        <Button color="primary" size='small' onClick={() => history.replace('/dashboard')}>Job Board</Button>
+                        </div>
+                    )
+                    : null}
                 </div>
                 <DarkModeToggle
                     onChange={toggleTheme}
@@ -70,7 +80,7 @@ export function Appbar({ history }) {
                 {user
                     ?
                     <>
-                        <Typography className={classes.margin}>{user.firstName} {user.lastName}</Typography>
+                        <Typography variant='subtitle2' className={classes.margin}>{user.firstName} {user.lastName}</Typography>
                         <IconButton
                             aria-label="account of current user"
                             aria-controls="menu-appbar"

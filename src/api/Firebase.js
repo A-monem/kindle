@@ -1,4 +1,3 @@
-import React from 'react'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/firestore'
@@ -108,10 +107,11 @@ export const firebaseLogout = () => {
 
 export const firebaseAddUserPersonalInfo = (profilePictureUrl, languageList, address, mobileNumber, emergency, gender, birthday, birthCountry, bio) => {
   return new Promise((resolve, reject) => {
-    console.log('email verified', auth.currentUser.emailVerified)
     firestore.collection('users').doc(auth.currentUser.uid).get()
       .then((info) => {
+        console.log({profilePictureUrl}, {languageList}, {address}, {mobileNumber}, {emergency}, {gender}, {birthday}, {birthCountry}, {bio})
         let user = info.data()
+        console.log(user)
         user['profilePictureUrl'] = profilePictureUrl
         user['languages'] = languageList
         user['address'] = address
@@ -121,7 +121,23 @@ export const firebaseAddUserPersonalInfo = (profilePictureUrl, languageList, add
         user['birthday'] = birthday
         user['birthCountry'] = birthCountry
         user['biograpghy'] = bio
-        console.log(user)
+        firestore.collection('users').doc(auth.currentUser.uid).set(user)
+          .then(() => resolve(user))
+          .catch(error => {
+            console.log("i am here firebase")
+            reject(error.message)
+          })
+      })
+      .catch(error => reject(error.message))
+  })
+}
+
+export const firebaseAddDisabilityInfo = (disabilityInfo) => {
+  return new Promise((resolve, reject) => {
+    firestore.collection('users').doc(auth.currentUser.uid).get()
+      .then((info) => {
+        let user = info.data()
+        user['disabilityInfo'] = disabilityInfo
         firestore.collection('users').doc(auth.currentUser.uid).set(user)
           .then(() => resolve())
           .catch(error => reject(error.message))
@@ -129,3 +145,118 @@ export const firebaseAddUserPersonalInfo = (profilePictureUrl, languageList, add
       .catch(error => reject(error.message))
   })
 }
+
+export const firebaseAddRefereeInfo = (refereeInfo) => {
+  return new Promise((resolve, reject) => {
+    firestore.collection('users').doc(auth.currentUser.uid).get()
+      .then((info) => {
+        let user = info.data()
+        user['referee'] = refereeInfo
+        firestore.collection('users').doc(auth.currentUser.uid).set(user)
+          .then(() => resolve())
+          .catch(error => reject(error.message))
+      })
+      .catch(error => reject(error.message))
+  })
+}
+
+export const firebaseAddFinancialInfo = (financialInfo) => {
+  return new Promise((resolve, reject) => {
+    firestore.collection('users').doc(auth.currentUser.uid).get()
+      .then((info) => {
+        let user = info.data()
+        user['financial'] = financialInfo
+        firestore.collection('users').doc(auth.currentUser.uid).set(user)
+          .then(() => resolve())
+          .catch(error => reject(error.message))
+      })
+      .catch(error => reject(error.message))
+  })
+}
+
+export const firebaseAddUserInfo = (name, newInfo) => {
+  return new Promise((resolve, reject) => {
+    firestore.collection('users').doc(auth.currentUser.uid).get()
+      .then((info) => {
+        let user = info.data()
+        user[name] = newInfo
+        firestore.collection('users').doc(auth.currentUser.uid).set(user)
+          .then(() => resolve(user))
+          .catch(error => reject(error.message))
+      })
+      .catch(error => reject(error.message))
+  })
+}
+
+export const firebaseGetServiceAgreementUrl = () => {
+  return new Promise((resolve, reject) => {
+    storage.ref('service_agreement/Kindle_Service_Agreement.pdf').getDownloadURL()
+      .then((url) => resolve(url))
+      .catch(error => reject(error.message))
+  })
+}
+
+export const firebaseSetRegistrationComplete = () => {
+  return new Promise((resolve, reject) => {
+    firestore.collection('users').doc(auth.currentUser.uid).get()
+    .then((info) => {
+      let user = info.data()
+      user['complete'] = true
+      firestore.collection('users').doc(auth.currentUser.uid).set(user)
+        .then(() => resolve(user))
+        .catch(error => reject(error.message))
+    })
+    .catch(error => reject(error.message))
+  })
+}
+
+// **************************************************************** //
+
+export const firebaseGetTimetable = (userId) => {
+  return new Promise((resolve, reject) => {
+
+    if (!userId) {
+      userId = auth.currentUser.uid
+    }
+
+    firestore.collection('users').doc(userId).get()
+    .then((info) => {
+      const timetable = info.data().timetable
+      console.log(timetable)
+      resolve(timetable)
+    })
+    .catch(error => reject(error.message))
+  })
+}
+
+export const firebaseSetTimetable = (timetable) => {
+  return new Promise((resolve, reject) => {
+    firestore.collection('users').doc(auth.currentUser.uid).get()
+    .then((info) => {
+      let user = info.data()
+      user['timetable'] = timetable
+      firestore.collection('users').doc(auth.currentUser.uid).set(user)
+        .then(() => resolve(user))
+        .catch(error => reject(error.message))
+    })
+    .catch(error => reject(error.message))
+  })
+}
+
+export const firebaseAddEventToTimetable = (event) => {
+  return new Promise((resolve, reject) => {
+    firestore.collection('users').doc(auth.currentUser.uid).get()
+    .then((info) => {
+      let user = info.data()
+      let timetable = user.timetable
+      console.log(timetable)
+      timetable.push(event)
+      user['timetable'] = timetable
+      firestore.collection('users').doc(auth.currentUser.uid).set(user)
+        .then(() => resolve(timetable))
+        .catch(error => reject(error.message))
+    })
+    .catch(error => reject(error.message))
+  })
+}
+

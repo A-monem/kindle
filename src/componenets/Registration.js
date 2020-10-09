@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
-import { Typography, Stepper, Step, StepLabel, Button, Paper, FormControl, RadioGroup, Radio, FormControlLabel } from '@material-ui/core'
+import React, {useContext} from 'react';
+import { UserContext } from '../context/UserContext'
+import { Typography, Stepper, Step, StepLabel, Button, Paper } from '@material-ui/core'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
-import ClientRegistrationStepOne from './ClientRegistrationStepOne'
-import ClientRegistrationStepTwo from './ClientRegistrationStepTwo'
-import { Height } from '@material-ui/icons';
+import ClientRegistrationStepOne from './ClientRegistration/ClientRegistrationStepOne'
+import ClientRegistrationStepTwo from './ClientRegistration/ClientRegistrationStepTwo'
+import ClientRegistrationStepThree from './ClientRegistration/ClientRegistrationStepThree'
+import ClientRegistrationStepFour from './ClientRegistration/ClientRegistrationStepFour'
+import ClientRegistrationStepFive from './ClientRegistration/ClientRegistrationStepFive'
+import WorkerRegistrationStepOne from './WorkerRegistration/WorkerRegistrationStepOne'
+import WorkerRegistrationStepTwo from './WorkerRegistration/WorkerRegistrationStepTwo'
+import WorkerRegistrationStepThree from './WorkerRegistration/WorkerRegistrationStepThree'
+import WorkerRegistrationStepFour from './WorkerRegistration/WorkerRegistrationStepFour'
+import WorkerRegistrationStepFive from './WorkerRegistration/WorkerRegistrationStepFive'
+import WorkerRegistrationStepSix from './WorkerRegistration/WorkerRegistrationStepSix'
 
 export default function Registration({ history }) {
-    const [activeStep, setActiveStep] = React.useState(0);
+    const [activeStep, setActiveStep] = React.useState(3);
 
     const theme = useTheme()
+    const { user } = useContext(UserContext)
 
     const useStyles = makeStyles(() => ({
         root: {
@@ -41,13 +51,20 @@ export default function Registration({ history }) {
             width: '100%',
             Height: '100%',
             marginTop: theme.spacing(2)
+        },
+        stepsCompleted: {
+
         }
     }))
 
     const classes = useStyles()
 
     const getSteps = () => {
-        return ['Personal Information', 'Information about your disability', 'Upload required documents'];
+        return(
+            user.type === 'client' 
+            ? ['Personal Information', 'Disability information', 'Referee', 'Financial Information', 'Agreement']
+            : ['Personal Information', 'Support work', 'Qualification', 'Referee', 'Financial Information', 'Agreement']
+        )
     }
 
     const steps = getSteps();
@@ -57,15 +74,38 @@ export default function Registration({ history }) {
     };
 
     const getStepContent = (stepIndex) => {
-        switch (stepIndex) {
-            case 0:
-                return <ClientRegistrationStepOne activeStep={activeStep} setActiveStep={setActiveStep}/>
-            case 1:
-                return <ClientRegistrationStepTwo />
-            case 2:
-                return 'This is the bit I really care about!';
-            default:
-                return 'Unknown stepIndex';
+        if (user.type === 'client'){
+            switch (stepIndex) {
+                case 0:
+                    return <ClientRegistrationStepOne activeStep={activeStep} setActiveStep={setActiveStep}/>
+                case 1:
+                    return <ClientRegistrationStepTwo activeStep={activeStep} setActiveStep={setActiveStep}/>
+                case 2:
+                    return <ClientRegistrationStepThree activeStep={activeStep} setActiveStep={setActiveStep}/>
+                case 3:
+                    return <ClientRegistrationStepFour activeStep={activeStep} setActiveStep={setActiveStep}/>
+                case 4:
+                    return <ClientRegistrationStepFive activeStep={activeStep} setActiveStep={setActiveStep} history={history}/>
+                default:
+                    return 'Unknown stepIndex';
+            }
+        } else {
+            switch (stepIndex) {
+                case 0:
+                    return <WorkerRegistrationStepOne activeStep={activeStep} setActiveStep={setActiveStep}/>
+                case 1:
+                    return <WorkerRegistrationStepTwo activeStep={activeStep} setActiveStep={setActiveStep}/>
+                case 2:
+                    return <WorkerRegistrationStepThree activeStep={activeStep} setActiveStep={setActiveStep}/>
+                case 3:
+                    return <WorkerRegistrationStepFour activeStep={activeStep} setActiveStep={setActiveStep}/>
+                case 4:
+                    return <WorkerRegistrationStepFive activeStep={activeStep} setActiveStep={setActiveStep}/>
+                case 5:
+                    return <WorkerRegistrationStepSix activeStep={activeStep} setActiveStep={setActiveStep} history={history}/>
+                default:
+                    return 'Unknown stepIndex';
+            }
         }
     }
 
@@ -80,16 +120,7 @@ export default function Registration({ history }) {
                     ))}
                 </Stepper>
                 <div className={classes.body}>
-                    {activeStep === steps.length ? (
-                        <div>
-                            <Typography className={classes.instructions}>All steps completed</Typography>
-                            <Button onClick={handleReset}>Reset</Button>
-                        </div>
-                    ) : (
-                            <>
-                                {getStepContent(activeStep)}
-                            </>
-                        )}
+                    {getStepContent(activeStep)}
                 </div>
             </Paper>
         </div>

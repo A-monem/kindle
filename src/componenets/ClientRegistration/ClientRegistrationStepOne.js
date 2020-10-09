@@ -1,22 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext} from 'react';
 import { Typography, Button, Paper, Avatar, RadioGroup, Radio, FormControlLabel, TextareaAutosize, ListItemSecondaryAction, ListItemAvatar, 
     TextField, MenuItem, IconButton, Icon, List, ListItemText, ListItem, Grid, Modal, Snackbar, LinearProgress} from '@material-ui/core'
 import Alert from '@material-ui/lab/Alert';
-import {  MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers'
+import {  MuiPickersUtilsProvider, KeyboardDatePicker, DatePicker } from '@material-ui/pickers'
 import DateFnsUtils from '@date-io/date-fns';
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import languages from 'language-list'
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever'
-import GoogleApiWrapper, { setCoordinates } from './Map'
-import { firebaseRecaptchaGenerator, firebaseSendVerificationCode, firebaseAddUserPersonalInfo, storage, auth} from '../api/Firebase'
+import GoogleApiWrapper from '../Map'
+import { firebaseRecaptchaGenerator, firebaseSendVerificationCode, firebaseAddUserPersonalInfo, firebaseLogin, storage, auth} from '../../api/Firebase'
 import { getNames } from 'country-list'
+import { UserContext } from '../../context/UserContext'
 
-export default function ClientRegistrationStepTwo({ activeStep, setActiveStep }) {
+export default function ClientRegistrationStepOne({ activeStep, setActiveStep }) {
     const [openError, setOpenError] = useState(false)
     const [openSuccess, setOpenSuccess] = useState(false)
     const [message, setMessage] = useState('')
     const [photo, setPhoto] = useState(null)
-    const [profilrPictureUrl, setProfilePictureUrl] = useState(null)
+    const [profilePictureUrl, setProfilePictureUrl] = useState(null)
     const [progress, setProgress] = React.useState(0);
     const [languageList, setLanguageList] = useState(['English'])
     const [languageHolder, setLanguageHolder] = useState('')
@@ -52,6 +53,7 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
     }, [])
 
     const theme = useTheme()
+    const { user, password} = useContext(UserContext)
 
     const useStyles = makeStyles(() => ({
         root: {
@@ -197,7 +199,6 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
 
     const handleAddPhoto = (e) => {
         if (e.target.files[0]){
-            console.log(e.target.files[0])
             setPhoto(e.target.files[0])
         }
     }
@@ -216,7 +217,6 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
         () => {
            uploadPhoto.snapshot.ref.getDownloadURL()
             .then((url) => {
-                console.log({url})
                 setProfilePictureUrl(url)
             })
             .catch((error) => {
@@ -242,7 +242,6 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
     }
 
     const handleDeleteLanguage = (language) => {
-        console.log(language)
         const arr = languageList.filter(lang => lang !== language)
         setLanguageList(arr)
     }
@@ -256,7 +255,6 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
         );
         
         widget.on('result:select', (fullAddress, metaData) => {
-            console.log(metaData)
             setAddress1(metaData.address_line_1)
             setAddress2(metaData.address_line_2)
             setSuburb(metaData.locality_name)
@@ -264,7 +262,6 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
             setPostalCode(metaData.postcode)
             setLong(metaData.longitude)
             setLat(metaData.latitude)
-           // setCoordinates(metaData.latitude, metaData.longitude)
       });
     }
 
@@ -274,7 +271,6 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
         const regex = /04[\d]{8}/
         if (mobileNumber.match(regex)){
             const intMobileNumber = `+61${mobileNumber.slice(1, 10)}`
-            console.log(intMobileNumber)
             firebaseSendVerificationCode(intMobileNumber, appVerifier)
                 .then(() => {
                     setOpenMobileVerificationModal(true)
@@ -294,6 +290,7 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
         const confirmationResult = window.confirmationResult
         confirmationResult.confirm(verificationCode)
             .then((result) => {
+                firebaseLogin(user.email, password)
                 setOpenMobileVerificationModal(false)
                 setVerificationCode(null)
                 setMobileNumberVerified(true)
@@ -331,11 +328,12 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
             emergencyName, 
             emergencyMobileNumber
         }
+
+        // console.log(profilePictureUrl, languageList, address, mobileNumber, emergency, gender, birthday, birthCountry, bio)
+        //Needs to be changed back to check
         if (true) {
-            firebaseAddUserPersonalInfo(profilrPictureUrl, languageList, address, mobileNumber, emergency, gender, birthday, birthCountry, bio)
-            .then(() => {
-                setActiveStep((prevActiveStep) => prevActiveStep + 1);
-            })
+            firebaseAddUserPersonalInfo(profilePictureUrl, languageList, address, mobileNumber, emergency, gender, birthday, birthCountry, bio)
+            .then(() => setActiveStep((prevActiveStep) => prevActiveStep + 1))
             .catch((error) => {
                 setMessage(error)
                 setOpenError(true)
@@ -426,7 +424,7 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
                         </div>
                     </Grid>
                     <Grid item xs={6} className={classes.avatar}>
-                        <img alt="Profile Picture" src={profilrPictureUrl? profilrPictureUrl: './user.png'}
+                        <img alt="Profile Picture" src={profilePictureUrl? profilePictureUrl: './user.png'}
                          style={{width: theme.spacing(30), height: theme.spacing(30), borderRadius: theme.spacing(15)}}/>
                     </Grid>
                 </Grid>
@@ -639,14 +637,12 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
                 }}>
                     <FormControlLabel value='Male' control={<Radio color='primary' />} label='Male' />
                     <FormControlLabel value='Female' control={<Radio color='primary' />} label='Female' />
-                    <FormControlLabel value='Other' control={<Radio color='primary' />} label='Other' />
                 </RadioGroup>
             </div>
             <div style={{marginTop: theme.spacing(2)}}>
                 <Typography variant='subtitle1' color='primary'>7) What is your date of birth ?</Typography>
                 <MuiPickersUtilsProvider utils={DateFnsUtils}>
                     <KeyboardDatePicker
-                        disableToolbar
                         format='dd/MM/yyyy'
                         margin='normal'
                         id='date-picker-inline'
@@ -658,6 +654,19 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
                         }}
                     />
                 </MuiPickersUtilsProvider>
+                 {/* <TextField
+                    id="birthdayDate"
+                    label="Birthday"
+                    type="date"
+                    //format='dd/MM/yyyy'
+                    defaultValue="24/05/2019"
+                    // className={classes.textField}
+                    //value={birthday}
+                    onChange={handleDateChange}
+                    InputLabelProps={{
+                    shrink: true,
+                    }}
+                /> */}
             </div>
             <div style={{marginTop: theme.spacing(2), width: '50%'}}>
                 <Typography variant='subtitle1' color='primary'>8) In which country you were born ?</Typography>
@@ -735,3 +744,4 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
         </div>
     );
 }
+

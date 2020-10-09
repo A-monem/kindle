@@ -25,6 +25,9 @@ export default class ThemeContextProvider extends Component{
             typography: {
                 button: {
                   textTransform: 'none'
+                }, 
+                subtitle1: {
+                    fontWeight: 'bold'
                 }
             },
             props: {
