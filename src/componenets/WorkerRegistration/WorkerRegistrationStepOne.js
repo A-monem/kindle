@@ -50,8 +50,6 @@ export default function WorkerRegistrationStepOne({ activeStep, setActiveStep })
         script.onload = loadWidget
         document.body.appendChild(script);
 
-        console.log(user)
-
         if (user.profilePictureUrl) {
             setProfilePictureUrl(user.profilePictureUrl)
         }
@@ -83,7 +81,6 @@ export default function WorkerRegistrationStepOne({ activeStep, setActiveStep })
         }
 
         if(user.birthday){
-            console.log(new Date(user.birthday))
             setBirthday(new Date(user.birthday))
         }
 
@@ -312,7 +309,6 @@ export default function WorkerRegistrationStepOne({ activeStep, setActiveStep })
 
     const handleMobileVerification = () => {
         const appVerifier = window.recaptchaVerifier;
-        //console.log(appVerifier.D)
         const regex = /04[\d]{8}/
         if (mobileNumber.match(regex)){
             const intMobileNumber = `+61${mobileNumber.slice(1, 10)}`
@@ -359,8 +355,8 @@ export default function WorkerRegistrationStepOne({ activeStep, setActiveStep })
         setBirthCountry(e.target.value)
     }
 
-    const handleNext = () => {
-
+    const handleNext = (e) => {
+        e.preventDefault()
         const check = checkFields()
         const address = {
             address1, 
@@ -376,8 +372,7 @@ export default function WorkerRegistrationStepOne({ activeStep, setActiveStep })
 
         const birthdayMilliseconds = birthday.getTime()
         
-        //Needs to be changed back to check
-        if (true) {
+        if (check) {
             firebaseAddUserPersonalInfo(profilePictureUrl, languageList, address, mobileNumber, emergency, gender, birthdayMilliseconds, birthCountry, bio)
             .then((user) => {
                 addUser(user)
@@ -397,34 +392,10 @@ export default function WorkerRegistrationStepOne({ activeStep, setActiveStep })
     const checkFields = () => {
         if (profilePictureUrl) {
             if (languageList){
-                if (address1 && suburb && stateAus && postalCode) {
-                    if (mobileNumber && mobileNumberVerified){
-                        if (emergencyName && emergencyMobileNumber){
-                            if (gender){
-                                if (bio){
-                                    return true
-                                }else{
-                                    setMessage('Please make sure you wrote a little bit bout yourself in the biography field.')
-                                    setOpenError(true)
-                                    return false
-                                }
-                            }else{
-                                setMessage('Please make sure you selected a gender')
-                                setOpenError(true)
-                                return false
-                            }
-                        }else{
-                            setMessage('Please make sure you added an emergency contact.')
-                            setOpenError(true)
-                            return false
-                        }
-                    }else{
-                        setMessage('Please make sure you entered a valid mobile number. Please verify you mobile number.')
-                        setOpenError(true)
-                        return false
-                    }
-                } else {
-                    setMessage('Please make sure you entered your address correctly')
+                if (mobileNumber && mobileNumberVerified){
+                    return true
+                }else{
+                    setMessage('Please make sure you entered a valid mobile number. Please verify you mobile number.')
                     setOpenError(true)
                     return false
                 }
@@ -442,337 +413,335 @@ export default function WorkerRegistrationStepOne({ activeStep, setActiveStep })
 
     return (
         <div className={classes.root}>
-            <div className={classes.photo}>
-                <Typography variant='subtitle1' color='primary'>1) Upload your photo</Typography>
-                <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                        <div className={classes.photoUpload}>
-                            <div className={classes.photoUploadButtons}>
+            <form className={classes.form} onSubmit={e => handleNext(e)}>
+                <div className={classes.photo}>
+                    <Typography variant='subtitle1' color='primary'>1) Upload your photo</Typography>
+                    <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                            <div className={classes.photoUpload}>
+                                <div className={classes.photoUploadButtons}>
+                                    <TextField
+                                        size='small'
+                                        variant='outlined'
+                                        margin='normal'
+                                        fullWidth
+                                        id='uploadphoto'
+                                        name='uploadphoto'
+                                        type='file'
+                                        onChange={handleAddPhoto}
+                                    />
+                                    <Button 
+                                        variant='contained' 
+                                        color='primary'
+                                        size='small'
+                                        style={{marginTop: theme.spacing(1), marginLeft: theme.spacing(2)}}
+                                        onClick={handlePhotoUpload} 
+                                    >
+                                        Upload
+                                    </Button>
+                                </div>
+                                <LinearProgress value={progress} variant="determinate" color='primary'/>
+                            </div>
+                        </Grid>
+                        <Grid item xs={6} className={classes.avatar}>
+                            <img alt="Profile Picture" src={profilePictureUrl? profilePictureUrl: './user.png'}
+                            style={{width: theme.spacing(30), height: theme.spacing(30), borderRadius: theme.spacing(15)}}/>
+                        </Grid>
+                    </Grid>
+                </div>
+                <div className={classes.language}>
+                    <Typography variant='subtitle1' color='primary'>2) What languages do you speak ?</Typography>
+                    <List dense={true} className={classes.languageList}>
+                        {languageList.map((language) => (
+                            <div key={language} className={classes.languageListItem}>
+                            <ListItem >
+                                <ListItemText primary={language} />
+                                </ListItem>
+                                <IconButton onClick={() => handleDeleteLanguage(language)}><DeleteForeverIcon color='primary' /></IconButton>
+                            </div>
+                        ))}
+                    </List>
+                    <div className={classes.languageSelect}>
+                        <TextField
+                            fullWidth
+                            select
+                            size='small'
+                            label='Select a language'
+                            style={{ margin: 0, padding: 0 }}
+                            value={languageHolder}
+                            onChange={handleChangeLanguage}
+                            variant='outlined'
+                        >
+                            {languagesArray.map((option) => (
+                                <MenuItem key={option.code} value={option.language}>
+                                    {option.language}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                        <IconButton onClick={() => handleAddlanguage()}>
+                            <Icon color='primary' fontSize='small'>add_circle</Icon>
+                        </IconButton>
+                    </div>
+                </div>
+                <div className={classes.location}>
+                    <Typography variant='subtitle1' color='primary'>3) What is your address ?</Typography>
+                    <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                            <TextField
+                                size='small'
+                                variant='outlined'
+                                margin='normal'
+                                required
+                                fullWidth
+                                id='address1'
+                                label='Address line 1'
+                                name='address1'
+                                value={address1}
+                                onChange={e =>{
+                                    setAddress1(e.target.value)
+                                    setAddress2('')
+                                    setSuburb('')
+                                    setStateAus('')
+                                    setPostalCode('')
+                                }}
+                            />
+                            <TextField
+                                size='small'
+                                variant='outlined'
+                                margin='normal'
+                                fullWidth
+                                id='address2'
+                                label='Address line 2'
+                                name='address2'
+                                value={address2}
+                                onChange={e => setAddress2(e.target.value)}
+                            />
+                            <div className={classes.addressTwo}>
                                 <TextField
                                     size='small'
                                     variant='outlined'
                                     margin='normal'
                                     required
-                                    fullWidth
-                                    id='uploadphoto'
-                                    name='uploadphoto'
-                                    type='file'
-                                    onChange={handleAddPhoto}
+                                    style={{ marginRight: theme.spacing(1) }}
+                                    id='suburb'
+                                    label='Suburb'
+                                    name='suburb'
+                                    value={suburb}
+                                    onChange={e => setSuburb(e.target.value)}
                                 />
-                                <Button 
-                                variant='contained' 
-                                color='primary'
-                                size='small'
-                                style={{marginTop: theme.spacing(1), marginLeft: theme.spacing(2)}}
-                                onClick={handlePhotoUpload} 
-                                >
-                                    Upload
-                                </Button>
-                            </div>
-                            <LinearProgress value={progress} variant="determinate" color='primary'/>
-                        </div>
-                    </Grid>
-                    <Grid item xs={6} className={classes.avatar}>
-                        <img alt="Profile Picture" src={profilePictureUrl? profilePictureUrl: './user.png'}
-                         style={{width: theme.spacing(30), height: theme.spacing(30), borderRadius: theme.spacing(15)}}/>
-                    </Grid>
-                </Grid>
-            </div>
-            <div className={classes.language}>
-                <Typography variant='subtitle1' color='primary'>2) What languages do you speak ?</Typography>
-                <List dense={true} className={classes.languageList}>
-                    {languageList.map((language) => (
-                        <div key={language} className={classes.languageListItem}>
-                          <ListItem >
-                            <ListItemText primary={language} />
-                            </ListItem>
-                            <IconButton onClick={() => handleDeleteLanguage(language)}><DeleteForeverIcon color='primary' /></IconButton>
-                        </div>
-                    ))}
-                </List>
-                <div className={classes.languageSelect}>
-                    <TextField
-                        fullWidth
-                        select
-                        size='small'
-                        label='Select a language'
-                        style={{ margin: 0, padding: 0 }}
-                        value={languageHolder}
-                        onChange={handleChangeLanguage}
-                        variant='outlined'
-                    >
-                        {languagesArray.map((option) => (
-                            <MenuItem key={option.code} value={option.language}>
-                                {option.language}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                    <IconButton onClick={() => handleAddlanguage()}>
-                        <Icon color='primary' fontSize='small'>add_circle</Icon>
-                    </IconButton>
-                </div>
-            </div>
-            <div className={classes.location}>
-                <Typography variant='subtitle1' color='primary'>3) What is your address ?</Typography>
-                <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                        <TextField
-                            size='small'
-                            variant='outlined'
-                            margin='normal'
-                            required
-                            fullWidth
-                            id='address1'
-                            label='Address line 1'
-                            name='address1'
-                            value={address1}
-                            onChange={e =>{
-                                setAddress1(e.target.value)
-                                setAddress2('')
-                                setSuburb('')
-                                setStateAus('')
-                                setPostalCode('')
-                            }}
-                        />
-                        <TextField
-                            size='small'
-                            variant='outlined'
-                            margin='normal'
-                            fullWidth
-                            id='address2'
-                            label='Address line 2'
-                            name='address2'
-                            value={address2}
-                            onChange={e => setAddress2(e.target.value)}
-                        />
-                        <div className={classes.addressTwo}>
-                            <TextField
-                                size='small'
-                                variant='outlined'
-                                margin='normal'
-                                required
-                                style={{ marginRight: theme.spacing(1) }}
-                                id='suburb'
-                                label='Suburb'
-                                name='suburb'
-                                value={suburb}
-                                onChange={e => setSuburb(e.target.value)}
-                            />
-                            <TextField
-                                size='small'
-                                variant='outlined'
-                                margin='normal'
-                                required
-                                style={{ marginRight: theme.spacing(1) }}
-                                id='state'
-                                label='State'
-                                name='state'
-                                value={stateAus}
-                                onChange={e => setStateAus(e.target.value)}
-                            />
-                            <TextField
-                                size='small'
-                                variant='outlined'
-                                margin='normal'
-                                required
-                                id='postalCode'
-                                label='Postal Code'
-                                name='postalCode'
-                                value={postalCode}
-                                onChange={e => setPostalCode(e.target.value)}
-                            />
+                                <TextField
+                                    size='small'
+                                    variant='outlined'
+                                    margin='normal'
+                                    required
+                                    style={{ marginRight: theme.spacing(1) }}
+                                    id='state'
+                                    label='State'
+                                    name='state'
+                                    value={stateAus}
+                                    onChange={e => setStateAus(e.target.value)}
+                                />
+                                <TextField
+                                    size='small'
+                                    variant='outlined'
+                                    margin='normal'
+                                    required
+                                    id='postalCode'
+                                    label='Postal Code'
+                                    name='postalCode'
+                                    value={postalCode}
+                                    onChange={e => setPostalCode(e.target.value)}
+                                />
 
-                        </div>
+                            </div>
+                        </Grid>
+                        <Grid item xs={6} className={classes.map}>
+                            <div style={{ position: 'relative', width: '100%', height: '100%' }} id='map'>
+                                <GoogleApiWrapper lat={lat} long={long}/>
+                            </div>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={6} className={classes.map}>
-                        <div style={{ position: 'relative', width: '100%', height: '100%' }} id='map'>
-                            <GoogleApiWrapper lat={lat} long={long}/>
-                        </div>
-                    </Grid>
-                </Grid>
-            </div>
-            <div className={classes.mobile}>
-                <Typography variant='subtitle1' color='primary'>4) What is your mobile number ?</Typography>
-                <TextField
-                    size='small'
-                    variant='outlined'
-                    margin='normal'
-                    required
-                    fullWidth
-                    id='mobileNumber'
-                    label='Mobile Number'
-                    name='mobileNumber'
-                    type='tel'
-                    placeholder='0444888999'
-                    value={mobileNumber}
-                    onChange={e => setMobileNumber(e.target.value)}
-                />
-                {!mobileNumberVerified 
-                ? (
-                    <>
-                    <Typography variant='caption'>Please verify your mobile number</Typography>
-                    <div className={classes.mobileVerififcation}>
-                        <div id='recaptcha-container'></div>
-                        <Button 
-                            variant='contained' 
-                            color='primary'
-                            size='small'
-                            onClick={handleMobileVerification} 
-                        >
-                            Verifiy
-                        </Button>
-                    </div>
-                    <Modal
-                        open={openMobileVerificationModal}
-                        className={classes.mobileVerififcationModal}
-                        onClose={handleMobileVerificationClose}
-                        aria-labelledby='simple-modal-title'
-                        aria-describedby='simple-modal-description'
-                    >
-                        <>
-                        <Paper className={classes.mobileVerififcationModalPaper}>
-                        <Typography variant='subtitle2'>A verification code has been sent as an SMS to your mobile number</Typography>
-                        <TextField
-                            size='small'
-                            variant='outlined'
-                            margin='normal'
-                            id='verificationCode'
-                            label='Enter Verification Code'
-                            name='verificationCode'
-                            placeholder='123456'
-                            onChange={e => setVerificationCode(e.target.value)}
-                        />
-                        <Button 
-                            variant='contained' 
-                            color='primary'
-                            size='small'
-                            onClick={handleMobileVerificationConfirmation} 
-                        >
-                            Submit Code
-                        </Button>
-                        </Paper>
-                        </>
-                    </Modal>
-                    </>
-                )
-                : <Typography variant='caption'>Mobile number has been verified</Typography>
-                }
-            </div>
-            <div className={classes.emergancy}>
-                <Typography variant='subtitle1' color='primary'>5) Who should we contact in case of emergency ?</Typography>
-                <TextField
-                    size='small'
-                    variant='outlined'
-                    margin='normal'
-                    required
-                    fullWidth
-                    id='firstName'
-                    label='Full Name'
-                    name='emergancyFullName'
-                    placeholder='James Bond'
-                    value={emergencyName}
-                    onChange={e => setEmergencyName(e.target.value)}
-                />
-                <TextField
-                    size='small'
-                    variant='outlined'
-                    margin='normal'
-                    required
-                    fullWidth
-                    id='emergencymobileNumber'
-                    label='Emergency Mobile Number'
-                    name='emergencymobileNumber'
-                    type='tel'
-                    placeholder='0444888999'
-                    value={emergencyMobileNumber}
-                    onChange={e => setEmergencyMobileNumber(e.target.value)}
-                />
-            </div>
-            <div style={{marginTop: theme.spacing(2)}}>
-                <Typography variant='subtitle1' color='primary'>6) What is your gender ?</Typography>
-                <RadioGroup onChange={(e) => setGender(e.target.value)} value={gender}>
-                    <FormControlLabel value='Male' control={<Radio color='primary' />} label='Male' />
-                    <FormControlLabel value='Female' control={<Radio color='primary' />} label='Female' />
-                </RadioGroup>
-            </div>
-            <div style={{marginTop: theme.spacing(2)}}>
-                <Typography variant='subtitle1' color='primary'>7) What is your date of birth ?</Typography>
-                <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                    <KeyboardDatePicker
-                        format='dd/MM/yyyy'
-                        margin='normal'
-                        id='date-picker-inline'
-                        label='Date picker inline'
-                        value={birthday}
-                        onChange={handleDateChange}
-                        KeyboardButtonProps={{
-                            'aria-label': 'change date',
-                        }}
-                    />
-                </MuiPickersUtilsProvider>
-            </div>
-            <div style={{marginTop: theme.spacing(2), width: '50%'}}>
-                <Typography variant='subtitle1' color='primary'>8) In which country you were born ?</Typography>
-                <TextField
-                        fullWidth
-                        select
-                        size='small'
-                        label='Select a country'
-                        style={{ margin: 0, padding: 0 }}
-                        value={birthCountry}
-                        onChange={handleChangeBirthCountry}
-                        variant='outlined'
-                        style={{marginTop: theme.spacing(2)}}
-                    >
-                        {countriesArray.map((option) => (
-                            <MenuItem key={option} value={option}>
-                                {option}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-            </div>
-            <div className={classes.margin}>
-                <Typography variant='subtitle1' color='primary'>9) Write a short biography for your profile</Typography>
-                <Grid container spacing={2}>
-                    <Grid item xs={6}  className={classes.bio}>
+                </div>
+                <div className={classes.mobile}>
+                    <Typography variant='subtitle1' color='primary'>4) What is your mobile number ?</Typography>
                     <TextField
+                        size='small'
                         variant='outlined'
                         margin='normal'
                         required
                         fullWidth
-                        id='bio'
-                        label='Biography'
-                        name='bio'
-                        multiline
-                        rows={7}
-                        value={bio}
-                        onChange={e => setBio(e.target.value)}
+                        id='mobileNumber'
+                        label='Mobile Number'
+                        name='mobileNumber'
+                        type='tel'
+                        placeholder='0444888999'
+                        value={mobileNumber}
+                        onChange={e => setMobileNumber(e.target.value)}
                     />
+                    {!mobileNumberVerified 
+                    ? (
+                        <>
+                        <Typography variant='caption'>Please verify your mobile number</Typography>
+                        <div className={classes.mobileVerififcation}>
+                            <div id='recaptcha-container'></div>
+                            <Button 
+                                variant='contained' 
+                                color='primary'
+                                size='small'
+                                onClick={handleMobileVerification} 
+                            >
+                                Verifiy
+                            </Button>
+                        </div>
+                        <Modal
+                            open={openMobileVerificationModal}
+                            className={classes.mobileVerififcationModal}
+                            onClose={handleMobileVerificationClose}
+                            aria-labelledby='simple-modal-title'
+                            aria-describedby='simple-modal-description'
+                        >
+                            <>
+                            <Paper className={classes.mobileVerififcationModalPaper}>
+                            <Typography variant='subtitle2'>A verification code has been sent as an SMS to your mobile number</Typography>
+                            <TextField
+                                size='small'
+                                variant='outlined'
+                                margin='normal'
+                                id='verificationCode'
+                                label='Enter Verification Code'
+                                name='verificationCode'
+                                placeholder='123456'
+                                onChange={e => setVerificationCode(e.target.value)}
+                            />
+                            <Button 
+                                variant='contained' 
+                                color='primary'
+                                size='small'
+                                onClick={handleMobileVerificationConfirmation} 
+                            >
+                                Submit Code
+                            </Button>
+                            </Paper>
+                            </>
+                        </Modal>
+                        </>
+                    )
+                    : <Typography variant='caption'>Mobile number has been verified</Typography>
+                    }
+                </div>
+                <div className={classes.emergancy}>
+                    <Typography variant='subtitle1' color='primary'>5) Who should we contact in case of emergency ?</Typography>
+                    <TextField
+                        size='small'
+                        variant='outlined'
+                        margin='normal'
+                        required
+                        fullWidth
+                        id='firstName'
+                        label='Full Name'
+                        name='emergancyFullName'
+                        placeholder='James Bond'
+                        value={emergencyName}
+                        onChange={e => setEmergencyName(e.target.value)}
+                    />
+                    <TextField
+                        size='small'
+                        variant='outlined'
+                        margin='normal'
+                        required
+                        fullWidth
+                        id='emergencymobileNumber'
+                        label='Emergency Mobile Number'
+                        name='emergencymobileNumber'
+                        type='tel'
+                        placeholder='0444888999'
+                        value={emergencyMobileNumber}
+                        onChange={e => setEmergencyMobileNumber(e.target.value)}
+                    />
+                </div>
+                <div style={{marginTop: theme.spacing(2)}}>
+                    <Typography variant='subtitle1' color='primary'>6) What is your gender ?</Typography>
+                    <RadioGroup onChange={(e) => setGender(e.target.value)} value={gender}>
+                        <FormControlLabel value='Male' control={<Radio color='primary' required/>} label='Male' />
+                        <FormControlLabel value='Female' control={<Radio color='primary' required/>} label='Female' />
+                    </RadioGroup>
+                </div>
+                <div style={{marginTop: theme.spacing(2)}}>
+                    <Typography variant='subtitle1' color='primary'>7) What is your date of birth ?</Typography>
+                    <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                        <KeyboardDatePicker
+                            format='dd/MM/yyyy'
+                            margin='normal'
+                            id='date-picker-inline'
+                            label='Birthday'
+                            value={birthday}
+                            onChange={handleDateChange}
+                            KeyboardButtonProps={{
+                                'aria-label': 'change date',
+                            }}
+                        />
+                    </MuiPickersUtilsProvider>
+                </div>
+                <div style={{marginTop: theme.spacing(2), width: '50%'}}>
+                    <Typography variant='subtitle1' color='primary'>8) In which country you were born ?</Typography>
+                    <TextField
+                            fullWidth
+                            select
+                            size='small'
+                            label='Select a country'
+                            value={birthCountry}
+                            onChange={handleChangeBirthCountry}
+                            variant='outlined'
+                            style={{marginTop: theme.spacing(2)}}
+                        >
+                            {countriesArray.map((option) => (
+                                <MenuItem key={option} value={option}>
+                                    {option}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                </div>
+                <div className={classes.margin}>
+                    <Typography variant='subtitle1' color='primary'>9) Write a short biography for your profile</Typography>
+                    <Grid container spacing={2}>
+                        <Grid item xs={6}  className={classes.bio}>
+                        <TextField
+                            variant='outlined'
+                            margin='normal'
+                            required
+                            fullWidth
+                            id='bio'
+                            label='Biography'
+                            name='bio'
+                            multiline
+                            rows={7}
+                            value={bio}
+                            onChange={e => setBio(e.target.value)}
+                        />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Typography variant='subtitle2' color='primary'>Example</Typography>
+                            <Typography variant='body2'>
+                            I'm an energetic, enthusiastic and reliable individual. I don’t have any experience in the disability sector, but I’d love to develop my skills and build relationships with people. I’m available for all types of work, especially getting out and about in the community. My particular passion is working with young adults in order to support growth, development, independence and autonomy.
+                            I love dreaming up unusual new recipes and laughing in good company. I'm also a big believer in the ability of all people to contribute to the community and hope to assist as many people as I can through Kindle.
+                            </Typography>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={6}>
-                        <Typography variant='subtitle2' color='primary'>Example</Typography>
-                        <Typography variant='body2'>
-                        I'm an energetic, enthusiastic and reliable individual. I don’t have any experience in the disability sector, but I’d love to develop my skills and build relationships with people. I’m available for all types of work, especially getting out and about in the community. My particular passion is working with young adults in order to support growth, development, independence and autonomy.
-                        I love dreaming up unusual new recipes and laughing in good company. I'm also a big believer in the ability of all people to contribute to the community and hope to assist as many people as I can through Kindle.
-                        </Typography>
-                    </Grid>
-                </Grid>
-                
-            </div>
-            <div className={classes.buttons}>
-                <Button
-                    variant='contained'
-                    disabled
-                    onClick={handleBack}
-                    className={classes.backButton}
-                >
-                    Back
-                </Button>
-                <Button variant='contained' color='primary' onClick={handleNext}>
-                    Next
-                </Button>
-            </div>
-            <>
+                    
+                </div>
+                <div className={classes.buttons}>
+                    <Button
+                        variant='contained'
+                        disabled
+                        onClick={handleBack}
+                        className={classes.backButton}
+                    >
+                        Back
+                    </Button>
+                    <Button variant='contained' color='primary' type='submit'>
+                        Next
+                    </Button>
+                </div>
                 <Snackbar open={openError} autoHideDuration={6000} onClose={handleErrorClose}>
                         <Alert onClose={handleErrorClose} severity='error'>
                             {message}
@@ -783,7 +752,7 @@ export default function WorkerRegistrationStepOne({ activeStep, setActiveStep })
                         {message}
                     </Alert>
                 </Snackbar>
-            </>
+            </form>
         </div>
     );
 }

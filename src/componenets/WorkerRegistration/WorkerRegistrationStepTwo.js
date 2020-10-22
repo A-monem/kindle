@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext} from 'react';
 import { Typography, Button, RadioGroup, Radio, FormControlLabel, 
-    FormGroup, TextField, MenuItem, Snackbar, Checkbox, Tooltip, Grid,} from '@material-ui/core'
+    FormGroup, TextField, MenuItem, Snackbar, Checkbox, Tooltip,} from '@material-ui/core'
 import Alert from '@material-ui/lab/Alert';
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { firebaseAddUserInfo } from '../../api/Firebase'
@@ -99,7 +99,7 @@ export default function WorkerRegistrationStepTwo({ activeStep, setActiveStep })
             justifyContent: 'center'
         },
         time: {
-            marginTop: theme.spacing(10),
+            marginTop: theme.spacing(2),
             width: '50%'
         }, 
         supportType:{
@@ -116,7 +116,7 @@ export default function WorkerRegistrationStepTwo({ activeStep, setActiveStep })
         }, 
         age: {
             marginTop: theme.spacing(2),
-            // width: '50%' 
+            width: '50%' 
         }, 
         workType: {
             marginTop: theme.spacing(2),
@@ -160,7 +160,8 @@ export default function WorkerRegistrationStepTwo({ activeStep, setActiveStep })
         setMessage('')
     }
 
-    const handleNext = () => {
+    const handleNext = (e) => {
+        e.preventDefault()
         const check = checkFields()
         const work = {
             supportTime, 
@@ -200,74 +201,35 @@ export default function WorkerRegistrationStepTwo({ activeStep, setActiveStep })
     };
 
     const checkFields = () => {
-        if (supportTime) {
-            if (supportType.length >= 1) {
-                if  (!renderTransport || 
-                    (renderTransport && drivingLicence ==='No') ||
-                    (renderTransport && drivingLicence === 'Yes' && drivingClientCar && drivingOwnCar==='No') ||
-                    (renderTransport && drivingLicence === 'Yes' && drivingClientCar && drivingOwnCar==='Yes' && plateNumber)) {
-                        if  (genderPreference) {
-                            if  (agePreference.length >= 1) {
-                                if  (workType.length >= 1) {
-                                    if  (workAvailability.length >= 1) {
-                                        if  (travelType) {
-                                            if  (visa !== 'Visa' || (visa === 'Visa' && permissionToCheckVisa)) {
-                                                if  (paidWorkExperience) {
-                                                    if  (unpaidWorkExperience === 'No' || (unpaidWorkExperience === 'Yes' && unpaidWorkExperienceType.length >= 1)) {
-                                                        return true
-                                                    } else {
-                                                        setMessage('Please make sure you have answered your unpaid work experience section')
-                                                        setOpenError(true)
-                                                        return false
-                                                    }
-                                                } else {
-                                                    setMessage('Please make sure you have answered your paid work experience section')
-                                                    setOpenError(true)
-                                                    return false
-                                                }
-                                            } else {
-                                                setMessage('Please make sure you have selected your work rights option')
-                                                setOpenError(true)
-                                                return false
-                                            }
-                                        } else {
-                                            setMessage('Please make sure you have selected your transportaion type')
-                                            setOpenError(true)
-                                            return false
-                                        }
-                                    } else {
-                                        setMessage('Please make sure you have selected your availability')
-                                        setOpenError(true)
-                                        return false
-                                    }
-                                } else {
-                                    setMessage('Please make sure you have selected one or more work type')
-                                    setOpenError(true)
-                                    return false
-                                }
-                            } else {
-                                setMessage('Please make sure you have selected one or more age group')
-                                setOpenError(true)
-                                return false
-                            }
+        if (supportType.length >= 1) {
+            if  (agePreference.length >= 1) {
+                if  (workType.length >= 1) {
+                    if  (workAvailability.length >= 1) {
+                        if( unpaidWorkExperience ==='No' || unpaidWorkExperience ==='Yes' && unpaidWorkExperienceType.length >= 1){
+                            return true
                         } else {
-                            setMessage('Please make sure you have selected a gender preference')
+                            setMessage('Please make sure you have selected unpaid work experience type')
                             setOpenError(true)
                             return false
                         }
+                    } else {
+                        setMessage('Please make sure you have selected your availability')
+                        setOpenError(true)
+                        return false
+                    }
                 } else {
-                    setMessage('Please make sure you have answered all questions in the Transport section')
+                    setMessage('Please make sure you have selected one or more work type')
                     setOpenError(true)
                     return false
                 }
             } else {
-                setMessage('Please make sure you have selected one or more support type')
+                setMessage('Please make sure you have selected one or more age group')
                 setOpenError(true)
                 return false
             }
-
+            
         } else {
-            setMessage('Please make sure you have selected how much support you need each week')
+            setMessage('Please make sure you have selected one or more support type')
             setOpenError(true)
             return false
         }
@@ -319,8 +281,6 @@ export default function WorkerRegistrationStepTwo({ activeStep, setActiveStep })
             workTypeHolder.push(e.target.value)
             setWorkType([...workTypeHolder])
         }
-        
-       
     }
 
     const handleWorkAvailabiltyChange = (e) => {
@@ -350,208 +310,213 @@ export default function WorkerRegistrationStepTwo({ activeStep, setActiveStep })
 
     return (
         <div className={classes.root}>
-            <div className={classes.time}>
-                <Typography variant='subtitle1' color='primary'>1) How much one to one support do you need each week ?</Typography>
-                <TextField
-                    fullWidth
-                    select
-                    size='small'
-                    label='Select a period'
-                    value={supportTime}
-                    onChange={e => setSupportTime(e.target.value)}
-                    variant='outlined'
-                    className={classes.margin}
-                >
-                    {supportTimeEachWeekArray.map((option, i) => (
-                        <MenuItem key={i} value={option}>
-                            {option}
-                        </MenuItem>
-                    ))}
-                </TextField>
-            </div>
-            <div className={classes.supportType}>
-                <Typography variant='subtitle1' color='primary'>2) What type of support can you provide ?</Typography>
-                    <FormGroup>
-                    {supportTypeArray.map((item, i) => (
-                        <Tooltip key={i} title={item.toolTip} placement="right" style={{width:'50%'}}>
-                        <FormControlLabel
-                            control={<Checkbox onChange={handleSupportTypeChange} 
-                            color='primary' 
-                            value={item.title} 
-                            name={item.title} 
-                            checked={supportType.includes(item.title)}/>
-                    }
-                                label={item.title}
-                            />
-                        </Tooltip>
-                    ))}
-                    </FormGroup>
-                    {renderTransport 
-                    ? (
-                        <div style={{padding: theme.spacing(2)}}>
-                        <Typography variant='subtitle1'>Transport</Typography>
-                        <div style={{display: 'flex', flexDirection: 'row'}}>
-                            <Typography variant='subtitle2' color='primary'>Do you have an unrestricted licence ?</Typography>
-                            <RadioGroup onChange={(e) => setDrivingLicence(e.target.value)} className={classes.transport} value={drivingLicence}>
-                                <FormControlLabel value='Yes' control={<Radio color='primary' />} label='Yes' />
-                                <FormControlLabel value='No' control={<Radio color='primary' />} label='No' />
-                            </RadioGroup>
-                        </div>
-                        
-                        {drivingLicence === 'Yes'
-                        ? (<>
-                            <div style={{display: 'flex', flexDirection: 'row'}}>
-                                <Typography variant='subtitle2' color='primary'>Are you willing to drive your client's car ?</Typography>
-                                <RadioGroup onChange={(e) => setDrivingClientCar(e.target.value)} className={classes.transport} value={drivingClientCar}>
-                                    <FormControlLabel value='Yes' control={<Radio color='primary' />} label='Yes' />
-                                    <FormControlLabel value='No' control={<Radio color='primary' />} label='No' />
-                                </RadioGroup>
-                            </div>
-                            <div style={{display: 'flex', flexDirection: 'row'}}>
-                                <Typography variant='subtitle2' color='primary'>Will you be driving your own car ?</Typography>
-                                <RadioGroup onChange={(e) => setDrivingOwnCar(e.target.value)} className={classes.transport} value={drivingOwnCar}>
-                                    <FormControlLabel value='Yes' control={<Radio color='primary' />} label='Yes' />
-                                    <FormControlLabel value='No' control={<Radio color='primary' />} label='No' />
-                                </RadioGroup>
-                            </div>
-                            </>
-                        )
-                        : null }
-
-                        {drivingOwnCar === 'Yes'
-                        ? (
-                            <div style={{display: 'flex', flexDirection: 'row', marginTop: theme.spacing(1)}}>
-                                    <TextField
-                                    size='small'
-                                    label='Your plate number'
-                                    value={plateNumber}
-                                    onChange={(e) => setPlateNumber(e.target.value)}
-                                    variant='outlined'
-                                />
-                            </div>
-                        )
-                        : null }
-                        </div>
-                    )
-                    : null}
-            </div>
-            <div className={classes.gender}>
-                <Typography variant='subtitle1' color='primary'>3) Do you have a gender preference for who you work with ?</Typography>
-                <RadioGroup onChange={(e) => setGenderPreference(e.target.value)} value={genderPreference}>
-                    <FormControlLabel value='Male' control={<Radio color='primary' />} label='Male' />
-                    <FormControlLabel value='Female' control={<Radio color='primary' />} label='Female' />
-                    <FormControlLabel value='No' control={<Radio color='primary' />} label='No Preference' />
-                </RadioGroup>
-            </div>
-            <div className={classes.age}>
-                <Typography variant='subtitle1' color='primary'>4) Do you have an age preference for who you work with ?</Typography>
-                <FormGroup>
-                    {ageGroupsOptions.map((item, i) => (
-                        <FormControlLabel
-                            key={i}
-                            control={<Checkbox onChange={handleAgeChange} color='primary' value={item} name={item} checked={agePreference.includes(item)}/>}
-                            label={item}
-                        />
-                    ))}
-                </FormGroup>
-                <div className={classes.margin}>
-                    <Typography variant='caption'>If you would like to work with teenagers or children you will need a current, paid Working with Children Check and a current and paid Disability Services Employment check (volunteer checks are no longer accepted).</Typography>
+             <form className={classes.form} onSubmit={e => handleNext(e)}>
+                <div className={classes.time}>
+                    <Typography variant='subtitle1' color='primary'>1) How much one to one support do you need each week ?</Typography>
+                    <TextField
+                        required
+                        fullWidth
+                        select
+                        size='small'
+                        label='Select a period'
+                        value={supportTime}
+                        onChange={e => setSupportTime(e.target.value)}
+                        variant='outlined'
+                        className={classes.margin}
+                    >
+                        {supportTimeEachWeekArray.map((option, i) => (
+                            <MenuItem key={i} value={option}>
+                                {option}
+                            </MenuItem>
+                        ))}
+                    </TextField>
                 </div>
-            </div>
-            <div className={classes.workType}>
-                <Typography variant='subtitle1' color='primary'>5) What type of work are you looking for ?</Typography>
-                <FormGroup>
-                    {workTypeOptions.map((item, i) => (
-                        <FormControlLabel
-                            key={i}
-                            control={<Checkbox onChange={handleWorkTypeChange} color='primary' value={item} name={item} />}
-                            label={item}
-                            checked={workType.includes(item)}
-                        />
-                    ))}
-                </FormGroup>
-            </div>
-            <div className={classes.workAvailability}>
-                <Typography variant='subtitle1' color='primary'>6) When are you available for work ?</Typography>
-                <FormGroup>
-                    {workAvailabilityOptions.map((item, i) => (
-                        <FormControlLabel
-                            key={i}
-                            control={<Checkbox onChange={handleWorkAvailabiltyChange} color='primary' value={item} name={item} />}
-                            label={item}
-                            checked={workAvailability.includes(item)}
-                        />
-                    ))}
-                </FormGroup>
-            </div>
-            <div className={classes.travelType}>
-                <Typography variant='subtitle1' color='primary'>7) How will you travel to work ?</Typography>
-                <RadioGroup onChange={(e) => setTravelType(e.target.value)} value={travelType}>
-                    <FormControlLabel value='Drive' control={<Radio color='primary' />} label='Use my own car' />
-                    <FormControlLabel value='Public transport' control={<Radio color='primary' />} label='Use public transportation' />
-                </RadioGroup>
-            </div>
-            <div className={classes.workRights}>
-                <Typography variant='subtitle1' color='primary'>8) Do you have the right to work in Australia ?</Typography>
-                <RadioGroup onChange={(e) => setVisa(e.target.value)} value={visa}>
-                    <FormControlLabel value='Austalian citizen' control={<Radio color='primary' />} label='I am an Australian citizen' />
-                    <FormControlLabel value='New Zealand citizen' control={<Radio color='primary' />} label='I am a New Zealand citizen' />
-                    <FormControlLabel value='Visa' control={<Radio color='primary' />} label='My visa allows me to work in Australia' />
-                </RadioGroup>
-                {visa === 'Visa'
-                ? <FormControlLabel
-                    style={{padding: theme.spacing(2)}}
-                    size={'small'}
-                    className={classes.margin} 
-                    control={<Checkbox onChange={() => setPermissionToCheckVisa(prevState => !prevState)} color='primary'
-                    value={permissionToCheckVisa} name={'visa_permission'} />}
-                    label={'I give permission for Kindle to verify my visa status'}
-                    checked={permissionToCheckVisa}
-                    />
-                : null}
-            </div>
-            <div className={classes.paidWorkExperience}>
-                <Typography variant='subtitle1' color='primary'>9) Have you ever had paid experience providing disability support ?</Typography>
-                <RadioGroup onChange={(e) => setPaidWorkExperience(e.target.value)} value={paidWorkExperience}>
-                    <FormControlLabel value='Yes' control={<Radio color='primary' />} label='Yes' />
-                    <FormControlLabel value='No' control={<Radio color='primary' />} label='No' />
-                </RadioGroup>
-            </div>
-            <div className={classes.unpaidWorkExperience}>
-                <Typography variant='subtitle1' color='primary'>10) Have you ever had unpaid experience providing disability support ?</Typography>
-                <RadioGroup onChange={(e) => setUnpaidWorkExperience(e.target.value)} value={unpaidWorkExperience}>
-                    <FormControlLabel value='Yes' control={<Radio color='primary' />} label='Yes' />
-                    <FormControlLabel value='No' control={<Radio color='primary' />} label='No' />
-                </RadioGroup>
-                {unpaidWorkExperience === 'Yes'
-                    ? <FormGroup style={{padding: theme.spacing(2)}}>
-                        {unpaidWorkExperienceOptions.map((item, i) => (
+                <div className={classes.supportType}>
+                    <Typography variant='subtitle1' color='primary'>2) What type of support can you provide ?</Typography>
+                        <FormGroup >
+                        {supportTypeArray.map((item, i) => (
+                            <Tooltip key={i} title={item.toolTip} placement="right" style={{width:'50%'}}>
+                                <FormControlLabel
+                                    control={<Checkbox
+                                                onChange={handleSupportTypeChange} 
+                                                color='primary' 
+                                                value={item.title} 
+                                                name={item.title} 
+                                                checked={supportType.includes(item.title)}
+                                            />
+                                    }
+                                    label={item.title}
+                                   
+                                />
+                            </Tooltip>
+                        ))}
+                        </FormGroup>
+                        {renderTransport 
+                        ? (
+                            <div style={{paddingTop: theme.spacing(2), paddingLeft: theme.spacing(2)}}>
+                            <Typography variant='subtitle1'>Transport</Typography>
+                            <div style={{display: 'flex', flexDirection: 'row'}}>
+                                <Typography variant='subtitle2' color='primary'>Do you have an unrestricted licence ?</Typography>
+                                <RadioGroup onChange={(e) => setDrivingLicence(e.target.value)} className={classes.transport} value={drivingLicence}>
+                                    <FormControlLabel value='Yes' control={<Radio color='primary' required/>} label='Yes' />
+                                    <FormControlLabel value='No' control={<Radio color='primary' required/>} label='No' />
+                                </RadioGroup>
+                            </div>
+                            
+                            {drivingLicence === 'Yes'
+                            ? (<>
+                                <div style={{display: 'flex', flexDirection: 'row'}}>
+                                    <Typography variant='subtitle2' color='primary'>Are you willing to drive your client's car ?</Typography>
+                                    <RadioGroup onChange={(e) => setDrivingClientCar(e.target.value)} className={classes.transport} value={drivingClientCar}>
+                                        <FormControlLabel value='Yes' control={<Radio color='primary' required/>} label='Yes' />
+                                        <FormControlLabel value='No' control={<Radio color='primary' required/>} label='No' />
+                                    </RadioGroup>
+                                </div>
+                                <div style={{display: 'flex', flexDirection: 'row'}}>
+                                    <Typography variant='subtitle2' color='primary'>Will you be driving your own car ?</Typography>
+                                    <RadioGroup onChange={(e) => setDrivingOwnCar(e.target.value)} className={classes.transport} value={drivingOwnCar}>
+                                        <FormControlLabel value='Yes' control={<Radio color='primary' required/>} label='Yes' />
+                                        <FormControlLabel value='No' control={<Radio color='primary' required/>} label='No' />
+                                    </RadioGroup>
+                                </div>
+                                </>
+                            )
+                            : null }
+
+                            {drivingOwnCar === 'Yes'
+                            ? (
+                                <div style={{display: 'flex', flexDirection: 'row', marginTop: theme.spacing(1)}}>
+                                        <TextField
+                                        required
+                                        size='small'
+                                        label='Your plate number'
+                                        value={plateNumber}
+                                        onChange={(e) => setPlateNumber(e.target.value)}
+                                        variant='outlined'
+                                    />
+                                </div>
+                            )
+                            : null }
+                            </div>
+                        )
+                        : null}
+                </div>
+                <div className={classes.gender}>
+                    <Typography variant='subtitle1' color='primary'>3) Do you have a gender preference for who you work with ?</Typography>
+                    <RadioGroup onChange={(e) => setGenderPreference(e.target.value)} value={genderPreference}>
+                        <FormControlLabel value='Male' control={<Radio color='primary' required/>} label='Male' />
+                        <FormControlLabel value='Female' control={<Radio color='primary' required/>} label='Female' />
+                        <FormControlLabel value='No' control={<Radio color='primary' required/>} label='No Preference' />
+                    </RadioGroup>
+                </div>
+                <div className={classes.age}>
+                    <Typography variant='subtitle1' color='primary'>4) Do you have an age preference for who you work with ?</Typography>
+                    <FormGroup>
+                        {ageGroupsOptions.map((item, i) => (
                             <FormControlLabel
                                 key={i}
-                                control={<Checkbox onChange={handleUnpaidWorkExperienceChange} 
-                                color='primary' value={item} name={item} />}
+                                control={<Checkbox onChange={handleAgeChange} color='primary' value={item} name={item} checked={agePreference.includes(item)}/>}
                                 label={item}
-                                checked={unpaidWorkExperienceType.includes(item)}
                             />
                         ))}
                     </FormGroup>
-                    : null
-                }
-            </div>
-            <div className={classes.buttons}>
-                <Button
-                    variant='contained'
-                    disabled={activeStep === 0}
-                    onClick={handleBack}
-                    className={classes.backButton}
-                >
-                    Back
-                </Button>
-                <Button variant='contained' color='primary' onClick={handleNext}>
-                    Next
-                </Button>
-            </div>
-            <>
+                    <div className={classes.margin}>
+                        <Typography variant='caption'>If you would like to work with teenagers or children you will need a current, paid Working with Children Check and a current and paid Disability Services Employment check (volunteer checks are no longer accepted).</Typography>
+                    </div>
+                </div>
+                <div className={classes.workType}>
+                    <Typography variant='subtitle1' color='primary'>5) What type of work are you looking for ?</Typography>
+                    <FormGroup>
+                        {workTypeOptions.map((item, i) => (
+                            <FormControlLabel
+                                key={i}
+                                control={<Checkbox onChange={handleWorkTypeChange} color='primary' value={item} name={item} />}
+                                label={item}
+                                checked={workType.includes(item)}
+                            />
+                        ))}
+                    </FormGroup>
+                </div>
+                <div className={classes.workAvailability}>
+                    <Typography variant='subtitle1' color='primary'>6) When are you available for work ?</Typography>
+                    <FormGroup>
+                        {workAvailabilityOptions.map((item, i) => (
+                            <FormControlLabel
+                                key={i}
+                                control={<Checkbox onChange={handleWorkAvailabiltyChange} color='primary' value={item} name={item} />}
+                                label={item}
+                                checked={workAvailability.includes(item)}
+                            />
+                        ))}
+                    </FormGroup>
+                </div>
+                <div className={classes.travelType}>
+                    <Typography variant='subtitle1' color='primary'>7) How will you travel to work ?</Typography>
+                    <RadioGroup onChange={(e) => setTravelType(e.target.value)} value={travelType}>
+                        <FormControlLabel value='Drive' control={<Radio color='primary' required/>} label='Use my own car' />
+                        <FormControlLabel value='Public transport' control={<Radio color='primary' required/>} label='Use public transportation' />
+                    </RadioGroup>
+                </div>
+                <div className={classes.workRights}>
+                    <Typography variant='subtitle1' color='primary'>8) Do you have the right to work in Australia ?</Typography>
+                    <RadioGroup onChange={(e) => setVisa(e.target.value)} value={visa}>
+                        <FormControlLabel value='Austalian citizen' control={<Radio color='primary' required/>} label='I am an Australian citizen' />
+                        <FormControlLabel value='New Zealand citizen' control={<Radio color='primary' required/>} label='I am a New Zealand citizen' />
+                        <FormControlLabel value='Visa' control={<Radio color='primary' required/>} label='My visa allows me to work in Australia' />
+                    </RadioGroup>
+                    {visa === 'Visa'
+                    ? <FormControlLabel
+                        style={{padding: theme.spacing(2)}}
+                        size={'small'}
+                        className={classes.margin} 
+                        control={<Checkbox onChange={() => setPermissionToCheckVisa(prevState => !prevState)} color='primary'
+                        value={permissionToCheckVisa} name={'visa_permission'} />}
+                        label={'I give permission for Kindle to verify my visa status'}
+                        checked={permissionToCheckVisa}
+                        />
+                    : null}
+                </div>
+                <div className={classes.paidWorkExperience}>
+                    <Typography variant='subtitle1' color='primary'>9) Have you ever had paid experience providing disability support ?</Typography>
+                    <RadioGroup onChange={(e) => setPaidWorkExperience(e.target.value)} value={paidWorkExperience}>
+                        <FormControlLabel value='Yes' control={<Radio color='primary' required/>} label='Yes' />
+                        <FormControlLabel value='No' control={<Radio color='primary' required/>} label='No' />
+                    </RadioGroup>
+                </div>
+                <div className={classes.unpaidWorkExperience}>
+                    <Typography variant='subtitle1' color='primary'>10) Have you ever had unpaid experience providing disability support ?</Typography>
+                    <RadioGroup onChange={(e) => setUnpaidWorkExperience(e.target.value)} value={unpaidWorkExperience}>
+                        <FormControlLabel value='Yes' control={<Radio color='primary' required/>} label='Yes' />
+                        <FormControlLabel value='No' control={<Radio color='primary' required/>} label='No' />
+                    </RadioGroup>
+                    {unpaidWorkExperience === 'Yes'
+                        ? <FormGroup style={{padding: theme.spacing(2)}}>
+                            {unpaidWorkExperienceOptions.map((item, i) => (
+                                <FormControlLabel
+                                    key={i}
+                                    control={<Checkbox onChange={handleUnpaidWorkExperienceChange} 
+                                    color='primary' value={item} name={item} />}
+                                    label={item}
+                                    checked={unpaidWorkExperienceType.includes(item)}
+                                />
+                            ))}
+                        </FormGroup>
+                        : null
+                    }
+                </div>
+                <div className={classes.buttons}>
+                    <Button
+                        variant='contained'
+                        disabled={activeStep === 0}
+                        onClick={handleBack}
+                        className={classes.backButton}
+                    >
+                        Back
+                    </Button>
+                    <Button variant='contained' color='primary' type='submit'>
+                        Next
+                    </Button>
+                </div>
                 <Snackbar open={openError} autoHideDuration={6000} onClose={handleErrorClose}>
                         <Alert onClose={handleErrorClose} severity='error'>
                             {message}
@@ -562,7 +527,7 @@ export default function WorkerRegistrationStepTwo({ activeStep, setActiveStep })
                         {message}
                     </Alert>
                 </Snackbar>
-            </>
+             </form>
         </div>
     );
 }

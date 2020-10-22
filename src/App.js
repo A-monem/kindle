@@ -6,6 +6,8 @@ import Error from './componenets/Error'
 import Signup from './componenets/Signup'
 import Signin from './componenets/Signin'
 import Dashboard from './componenets/Dashboard'
+import JobBoard from './componenets/JobBoard'
+import Messages from './componenets/Messages'
 import Terms from './componenets/Terms'
 import Privacy from './componenets/Privacy'
 import CombinedContextProvider from './context/CombinedContext'
@@ -40,6 +42,8 @@ function App() {
               <Route path='/signup' exact component={Signup} />
               <Route path='/signin' exact component={Signin} />
               <Route path='/dashboard' exact component={Dashboard} />
+              <Route path='/jobs' exact component={JobBoard} />
+              <Route path='/messages' exact component={Messages} />
               <Route path='/terms' exact component={Terms} />
               <Route path='/privacy' exact component={Privacy} />
               <Route component={Error} />

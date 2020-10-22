@@ -1,21 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext} from 'react';
 import { Typography, Button, RadioGroup, Radio, FormControlLabel, FormGroup, TextField, MenuItem, Snackbar, Checkbox, Tooltip } from '@material-ui/core'
 import Alert from '@material-ui/lab/Alert';
 import { makeStyles, useTheme } from '@material-ui/core/styles'
-import { firebaseAddFinancialInfo } from '../../api/Firebase'
+import { firebaseAddUserInfo } from '../../api/Firebase'
+import { UserContext } from '../../context/UserContext'
 
 export default function ClientRegistrationStepFour({ activeStep, setActiveStep }) {
     const [openError, setOpenError] = useState(false)
     const [openSuccess, setOpenSuccess] = useState(false)
     const [message, setMessage] = useState('')
-    const [ndiaFunding, setNdisFunding] = useState('')
+    const [ndiaFunding, setNdiaFunding] = useState('')
     const [fundingType, setFundingType] = useState('')
 
     useEffect(() => {
 
+        document.getElementById('kindleApp').scrollIntoView();
+        
+        if (user.financialInfo){
+    
+            setNdiaFunding(user.financialInfo.ndiaFunding)
+            setFundingType(user.financialInfo.fundingType)
+
+        }
+
     }, [])
 
     const theme = useTheme()
+    const { user, addUser} = useContext(UserContext)
+
 
     const useStyles = makeStyles(() => ({
         root: {
@@ -67,87 +79,73 @@ export default function ClientRegistrationStepFour({ activeStep, setActiveStep }
         setMessage('')
     }
 
-    const handleNext = () => {
+    const handleNext = (e) => {
+        e.preventDefault()
         
-        const check = checkFields()
         const financialInfo = {
             ndiaFunding,
             fundingType
         }
 
-        if (true){
-            firebaseAddFinancialInfo(financialInfo)
-                .then(() => setActiveStep((prevActiveStep) => prevActiveStep + 1))
-                .catch((error) => {
-                    setMessage(error)
-                    setOpenError(true)
-                })
-        } 
+        firebaseAddUserInfo('financialInfo', financialInfo)
+            .then((user) => {
+                addUser(user)
+                setActiveStep((prevActiveStep) => prevActiveStep + 1)
+            })
+            .catch((error) => {
+                setMessage(error)
+                setOpenError(true)
+            })
     };
 
     const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1)
     };
 
-    const checkFields = () => {
-        if (ndiaFunding) {
-            if (fundingType) {
-                return true
-            } else {
-                setMessage('Please make sure you have selected funding type')
-                setOpenError(true)
-                return false
-            }
-        } else {
-            setMessage('Please make sure you have selected whether you are using NDIA funding')
-            setOpenError(true)
-            return false
-        }
-    }
 
     return (
         <div className={classes.root}>
-            <div>
-                <Typography variant='subtitle2'>We collect financial information so we can arrange payroll and invoicing services. As with everything you tell us, it's important to know that this information will not be shared with anyone.</Typography>
-            </div>
-            <div className={classes.funding}>
-                <Typography variant='subtitle1' color='primary'>1) Will you be using NDIA funding ?</Typography>
-                <RadioGroup onChange={(e) => setNdisFunding(e.target.value)}>
-                    <FormControlLabel value='Yes' control={<Radio color='primary' />} label='Yes' />
-                    <FormControlLabel value='No' control={<Radio color='primary' />} label='No' />
-                </RadioGroup>
-            </div>
-            
-            <div className={classes.fundingType}>
-                <Typography variant='subtitle2' color='primary'>2) What is your payment method ?</Typography>
-                { ndiaFunding === 'Yes' 
-                ? 
-                <RadioGroup onChange={(e) => setFundingType(e.target.value)}>
-                    <FormControlLabel value='self-managed' control={<Radio color='primary' />} label='Self Managed' />
-                    <FormControlLabel value='plan-managed' control={<Radio color='primary' />} label='Plan Managed' />
-                    <FormControlLabel value='agency-managed' control={<Radio color='primary' />} label='NDIA/Agency Managed' />
-                </RadioGroup>
-                :
-                <RadioGroup onChange={(e) => setFundingType(e.target.value)}>
-                    <FormControlLabel value='self-managed' control={<Radio color='primary' />} label='Self Managed' />
-                    <FormControlLabel value='plan-managed' control={<Radio color='primary' />} label='Plan Managed' />
-                </RadioGroup>
-                }
-            </div>
-            <div className={classes.buttons}>
-                <Button
-                    variant='contained'
-                    disabled={activeStep === 0}
-                    onClick={handleBack}
-                    className={classes.backButton}
-                >
-                    Back
-                </Button>
-                <Button variant='contained' color='primary' onClick={handleNext}>
-                    Next
-                </Button>
-            </div>
-            <>
+            <form className={classes.form} onSubmit={e => handleNext(e)}>
+                <div>
+                    <Typography variant='caption'>We collect financial information so we can arrange payroll and invoicing services. As with everything you tell us, it's important to know that this information will not be shared with anyone.</Typography>
+                </div>
+                <div className={classes.funding}>
+                    <Typography variant='subtitle1' color='primary'>1) Will you be using NDIA funding ?</Typography>
+                    <RadioGroup onChange={(e) => setNdiaFunding(e.target.value)} value={ndiaFunding}>
+                        <FormControlLabel value='Yes' control={<Radio color='primary' required/>} label='Yes' />
+                        <FormControlLabel value='No' control={<Radio color='primary' required/>} label='No' />
+                    </RadioGroup>
+                </div>
+                
+                <div className={classes.fundingType}>
+                    <Typography variant='subtitle1' color='primary'>2) What is your payment method ?</Typography>
+                    { ndiaFunding === 'Yes' 
+                    ? 
+                    <RadioGroup onChange={(e) => setFundingType(e.target.value)} value={fundingType}>
+                        <FormControlLabel value='self-managed' control={<Radio color='primary' required/>} label='Self Managed' />
+                        <FormControlLabel value='plan-managed' control={<Radio color='primary' required/>} label='Plan Managed' />
+                        <FormControlLabel value='agency-managed' control={<Radio color='primary' required/>} label='NDIA/Agency Managed' />
+                    </RadioGroup>
+                    :
+                    <RadioGroup onChange={(e) => setFundingType(e.target.value)} value={fundingType}>
+                        <FormControlLabel value='self-managed' control={<Radio color='primary' required/>} label='Self Managed' />
+                        <FormControlLabel value='plan-managed' control={<Radio color='primary' required/>} label='Plan Managed' />
+                    </RadioGroup>
+                    }
+                </div>
+                <div className={classes.buttons}>
+                    <Button
+                        variant='contained'
+                        disabled={activeStep === 0}
+                        onClick={handleBack}
+                        className={classes.backButton}
+                    >
+                        Back
+                    </Button>
+                    <Button variant='contained' color='primary' type='submit'>
+                        Next
+                    </Button>
+                </div>
                 <Snackbar open={openError} autoHideDuration={6000} onClose={handleErrorClose}>
                         <Alert onClose={handleErrorClose} severity='error'>
                             {message}
@@ -158,7 +156,7 @@ export default function ClientRegistrationStepFour({ activeStep, setActiveStep }
                         {message}
                     </Alert>
                 </Snackbar>
-            </>
+            </form>
         </div>
     );
 }

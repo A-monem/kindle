@@ -13,9 +13,10 @@ import WorkerRegistrationStepThree from './WorkerRegistration/WorkerRegistration
 import WorkerRegistrationStepFour from './WorkerRegistration/WorkerRegistrationStepFour'
 import WorkerRegistrationStepFive from './WorkerRegistration/WorkerRegistrationStepFive'
 import WorkerRegistrationStepSix from './WorkerRegistration/WorkerRegistrationStepSix'
+import WorkerRegistrationStepSeven from './WorkerRegistration/WorkerRegistrationStepSeven'
 
 export default function Registration({ history }) {
-    const [activeStep, setActiveStep] = React.useState(3);
+    const [activeStep, setActiveStep] = React.useState(0);
 
     const theme = useTheme()
     const { user } = useContext(UserContext)
@@ -63,7 +64,7 @@ export default function Registration({ history }) {
         return(
             user.type === 'client' 
             ? ['Personal Information', 'Disability information', 'Referee', 'Financial Information', 'Agreement']
-            : ['Personal Information', 'Support work', 'Qualification', 'Referee', 'Financial Information', 'Agreement']
+            : ['Personal Information', 'Support work', 'Qualification', 'Referee', 'Financial Information', 'Upload Documents', 'Agreement']
         )
     }
 
@@ -102,7 +103,9 @@ export default function Registration({ history }) {
                 case 4:
                     return <WorkerRegistrationStepFive activeStep={activeStep} setActiveStep={setActiveStep}/>
                 case 5:
-                    return <WorkerRegistrationStepSix activeStep={activeStep} setActiveStep={setActiveStep} history={history}/>
+                    return <WorkerRegistrationStepSix activeStep={activeStep} setActiveStep={setActiveStep}/>
+                case 6:
+                    return <WorkerRegistrationStepSeven activeStep={activeStep} setActiveStep={setActiveStep} history={history}/>
                 default:
                     return 'Unknown stepIndex';
             }

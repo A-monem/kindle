@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext} from 'react';
-import { Typography, Button, RadioGroup, Radio, FormControlLabel, 
-    FormGroup, TextField, MenuItem, Snackbar, Checkbox, Tooltip, Grid,} from '@material-ui/core'
+import { Typography, Button, TextField, MenuItem, Snackbar} from '@material-ui/core'
 import Alert from '@material-ui/lab/Alert';
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { firebaseAddUserInfo } from '../../api/Firebase'
@@ -145,97 +144,14 @@ export default function WorkerRegistrationStepFour({ activeStep, setActiveStep }
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
 
-    // const checkFields = () => {
-    //     if (refereeOneFirstName){
-    //         if (refereeOneLastName){
-    //             if (refereeOneEmail){
-    //                 if (refereeOnePhoneNumber){
-    //                     if (refereeOneRelationship){
-    //                         if (refereeOneRelationshipLength){
-    //                             if (refereeTwoFirstName){
-    //                                 if (refereeTwoLastName){
-    //                                     if (refereeTwoEmail){
-    //                                         if (refereeTwoPhoneNumber){
-    //                                             if (refereeTwoRelationship){
-    //                                                 if (refereeTwoRelationship === 'Other' && refereeTwoRelationshipDescription){
-    //                                                     if (refereeTwoRelationshipLength){
-    //                                                         return true
-    //                                                     }else{
-    //                                                         setMessage('Please make sure you selected your relationship length with referee Two')
-    //                                                         setOpenError(true)
-    //                                                         return false
-    //                                                     }
-    //                                                 }else{
-    //                                                     setMessage('Please make sure you entered your relationship description with referee two')
-    //                                                     setOpenError(true)
-    //                                                     return false
-    //                                                 }
-    //                                             }else{
-    //                                                 setMessage('Please make sure you selected your relationship with referee Two')
-    //                                                 setOpenError(true)
-    //                                                 return false
-    //                                             }
-    //                                         }else{
-    //                                             setMessage('Please make sure you entered refree Two phone number')
-    //                                             setOpenError(true)
-    //                                             return false
-    //                                         }
-    //                                     }else{
-    //                                         setMessage('Please make sure you entered refree Two email address')
-    //                                         setOpenError(true)
-    //                                         return false
-    //                                     }
-    //                                 }else{
-    //                                     setMessage('Please make sure you entered refree Two last name')
-    //                                     setOpenError(true)
-    //                                     return false
-    //                                 }
-    //                             }else{
-    //                                 setMessage('Please make sure you entered refree Two first name')
-    //                                 setOpenError(true)
-    //                                 return false
-    //                             }
-    //                         }else{
-    //                             setMessage('Please make sure you selected your relationship length with referee one')
-    //                             setOpenError(true)
-    //                             return false
-    //                         }
-    //                     }else{
-    //                         setMessage('Please make sure you selected your relationship with referee one')
-    //                         setOpenError(true)
-    //                         return false
-    //                     }
-    //                 }else{
-    //                     setMessage('Please make sure you entered refree one phone number')
-    //                     setOpenError(true)
-    //                     return false
-    //                 }
-    //             }else{
-    //                 setMessage('Please make sure you entered refree one email address')
-    //                 setOpenError(true)
-    //                 return false
-    //             }
-    //         }else{
-    //             setMessage('Please make sure you entered refree one last name')
-    //             setOpenError(true)
-    //             return false
-    //         }
-    //     }else{
-    //         setMessage('Please make sure you entered refree one first name')
-    //         setOpenError(true)
-    //         return false
-    //     }
-    // }
-
-
     return (
         <div className={classes.root}>
             <div>
-                <Typography variant='subtitle2'>We will contact two referees and send them a quick survey to learn more about you. This should include at least one professional reference from within the last two years.</Typography>
+                <Typography variant='caption'>We will contact two referees and send them a quick survey to learn more about you. This should include at least one professional reference from within the last two years.</Typography>
             </div>
-            <form className={classes.form} onSubmit={e => handleNext(e)}>
+            <form onSubmit={e => handleNext(e)}>
                 <div className={classes.refereeOneInfo}>
-                <Typography variant='subtitle1' color={"primary"}>Referee 1</Typography>
+                <Typography variant='h6' color={"primary"}>Referee 1</Typography>
                     <TextField
                         size='small'
                         variant="outlined"
@@ -327,7 +243,7 @@ export default function WorkerRegistrationStepFour({ activeStep, setActiveStep }
                     </TextField>
                 </div> 
                 <div className={classes.refereeTwoInfo}>
-                <Typography variant='subtitle1' color={"primary"}>Referee 2</Typography>
+                <Typography variant='h6' color={"primary"}>Referee 2</Typography>
                     <TextField
                         size='small'
                         variant="outlined"
@@ -398,19 +314,22 @@ export default function WorkerRegistrationStepFour({ activeStep, setActiveStep }
                         ))}
                     </TextField>
                     {refereeTwoRelationship === 'Other'
-                    ? <TextField
-                        variant='outlined'
-                        margin='normal'
-                        required
-                        fullWidth
-                        id='refereeTwoRelationshipDescription'
-                        label='Relationship description'
-                        name='refereeTwoRelationshipDescription'
-                        multiline
-                        rows={7}
-                        value={refereeTwoRelationshipDescription}
-                        onChange={e => setRefereeTwoRelationshipDescription(e.target.value)}
+                    ? 
+                    <div style={{paddingTop: theme.spacing(2), paddingLeft: theme.spacing(2)}}> 
+                        <TextField
+                            variant='outlined'
+                            margin='normal'
+                            required
+                            fullWidth
+                            id='refereeTwoRelationshipDescription'
+                            label='Relationship description'
+                            name='refereeTwoRelationshipDescription'
+                            multiline
+                            rows={7}
+                            value={refereeTwoRelationshipDescription}
+                            onChange={e => setRefereeTwoRelationshipDescription(e.target.value)}
                         />
+                    </div>
                     : null
                     }
                     <TextField

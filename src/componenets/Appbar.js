@@ -9,6 +9,7 @@ import { withRouter } from "react-router";
 import { firebaseLogout } from '../api/Firebase'
 
 export function Appbar({ history }) {
+    
     const theme = useTheme()
     const { user, addUser } = useContext(UserContext)
     const { darkMode, toggleTheme } = useContext(ThemeContext)
@@ -64,10 +65,11 @@ export function Appbar({ history }) {
                     {user
                     ? (
                         <div style={{marginLeft: theme.spacing(4), display: 'inline'}}>
-                        <Button color="primary" size='small' onClick={() => history.replace('/dashboard')}>Dashboard</Button>
-                        <Button color="primary" size='small' onClick={() => history.replace('/dashboard')}>Search</Button>
-                        <Button color="primary" size='small' onClick={() => history.replace('/dashboard')}>Bookings</Button>
-                        <Button color="primary" size='small' onClick={() => history.replace('/dashboard')}>Job Board</Button>
+                            <Button color="primary" size='small' style={{marginRight: theme.spacing(2)}} onClick={() => history.replace('/dashboard')}>Dashboard</Button>
+                            <Button color="primary" size='small' style={{marginRight: theme.spacing(2)}} onClick={() => history.replace('/dashboard')}>Search</Button>
+                            <Button color="primary" size='small' style={{marginRight: theme.spacing(2)}} onClick={() => history.replace('/dashboard')}>Bookings</Button>
+                            <Button color="primary" size='small' style={{marginRight: theme.spacing(2)}} onClick={() => history.replace('/jobs')}>Job Board</Button>
+                            <Button color="primary" size='small' style={{marginRight: theme.spacing(2)}} onClick={() => history.replace('/messages')}>Messages</Button>
                         </div>
                     )
                     : null}

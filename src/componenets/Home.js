@@ -1,10 +1,15 @@
-import React, { Component } from 'react';
+import React, { useEffect } from 'react';
 import { Button, TextField, FormControlLabel, Checkbox,
     Link, Paper, Box, Grid, Typography, Switch} from '@material-ui/core'
 import Appbar from './Appbar'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
+import { auth } from '../api/Firebase'
 
 export default function Home({ history }){
+
+    useEffect(() => {
+        // console.log(auth.currentUser)
+    }, [])
 
     const theme = useTheme()
 

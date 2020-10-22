@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext} from 'react';
 import { Typography, Button, RadioGroup, Radio, FormControlLabel, FormGroup, TextField, MenuItem, Snackbar, Checkbox, Tooltip} from '@material-ui/core'
 import Alert from '@material-ui/lab/Alert';
 import { makeStyles, useTheme } from '@material-ui/core/styles'
-import { firebaseAddDisabilityInfo } from '../../api/Firebase'
+import { firebaseAddUserInfo } from '../../api/Firebase'
+import { UserContext } from '../../context/UserContext'
 
 export default function ClientRegistrationStepTwo({ activeStep, setActiveStep }) {
     const [openError, setOpenError] = useState(false)
@@ -29,9 +30,24 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
 
     useEffect(() => {
         document.getElementById('kindleApp').scrollIntoView();
+
+        if (user.disabilityInfo){
+         
+            setSupportTime(user.disabilityInfo.supportTime)
+            setDisability(user.disabilityInfo.disability)
+            setSupportType(user.disabilityInfo.supportType)
+            setBehaviourSupport(user.disabilityInfo.behaviourSupport)
+            setRestrictivePractices(user.disabilityInfo.restrictivePractices)
+            setMedication(user.disabilityInfo.medication)
+            setAdministerMedication(user.disabilityInfo.administerMedication)
+            setGenderPreference(user.disabilityInfo.genderPreference)
+
+        }
+
     }, [])
 
     const theme = useTheme()
+    const { user, addUser} = useContext(UserContext)
 
     const useStyles = makeStyles(() => ({
         root: {
@@ -57,6 +73,9 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
             marginTop: theme.spacing(4), 
             display: 'flex', 
             justifyContent: 'center'
+        },
+        form: {
+            width: '100%'
         },
         time: {
             marginTop: theme.spacing(10),
@@ -102,7 +121,8 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
         setMessage('')
     }
 
-    const handleNext = () => {
+    const handleNext = (e) => {
+        e.preventDefault()
         const check = checkFields()
         const disabilityInfo = {
             supportTime,
@@ -115,9 +135,12 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
             genderPreference
         }
 
-        if (true){
-            firebaseAddDisabilityInfo(disabilityInfo)
-                .then(() => setActiveStep((prevActiveStep) => prevActiveStep + 1))
+        if (check){
+            firebaseAddUserInfo('disabilityInfo', disabilityInfo)
+                .then((user) => {
+                    addUser(user)
+                    setActiveStep((prevActiveStep) => prevActiveStep + 1)
+                })
                 .catch((error) => {
                     setMessage(error)
                     setOpenError(true)
@@ -138,7 +161,7 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
             supportTypeHolder = supportTypeHolder.filter((item) => item !== e.target.value)
         }
 
-        setSupportType(supportTypeHolder)
+        setSupportType([...supportTypeHolder])
     }
 
     const checkFields = () => {
@@ -197,111 +220,114 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
 
     return (
         <div className={classes.root}>
-            <div className={classes.time}>
-                <Typography variant='subtitle1' color='primary'>1) How much one to one support do you need each week ?</Typography>
-                <TextField
-                    fullWidth
-                    select
-                    size='small'
-                    label='Select a period'
-                    value={supportTime}
-                    onChange={e => setSupportTime(e.target.value)}
-                    variant='outlined'
-                    className={classes.margin}
-                >
-                    {supportTimeEachWeekArray.map((option, i) => (
-                        <MenuItem key={i} value={option}>
-                            {option}
-                        </MenuItem>
-                    ))}
-                </TextField>
-            </div>
-            <div className={classes.disabilty}>
-                <Typography variant='subtitle1' color='primary'>2) Tell us a little bit more about your disability ?</Typography>
-                <TextField
-                    variant='outlined'
-                    margin='normal'
-                    required
-                    fullWidth
-                    id='bio'
-                    label='disability'
-                    name='bio'
-                    multiline
-                    rows={7}
-                    onChange={e => setDisability(e.target.value)}
-                />
-            </div>
-            <div className={classes.supportType}>
-                <Typography variant='subtitle1' color='primary'>3) What type of support do you need ?</Typography>
-                <FormGroup>
-                    {supportTypeArray.map((item, i) => (
-                        <Tooltip key={i} title={item.toolTip} arrow placement="bottom-start">
-                            <FormControlLabel
-                                control={<Checkbox onChange={handleSupportTypeChange} color='primary' value={item.title} name={item.title} />}
-                                label={item.title}
-                            />
-                        </Tooltip>
-                    ))}
-                </FormGroup>
-            </div>
-            <div className={classes.behaviourSupport}>
-                <Typography variant='subtitle1' color='primary'>4) Do you require any positive behaviour support ?</Typography>
-                <RadioGroup onChange={(e) => setBehaviourSupport(e.target.value)}>
-                    <FormControlLabel value='Yes' control={<Radio color='primary' />} label='Yes' />
-                    <FormControlLabel value='No' control={<Radio color='primary' />} label='No' />
-                </RadioGroup>
-                { behaviourSupport === 'Yes' ? 
-                <div className={classes.padding}>
-                        <Tooltip title={restrictivePracticesTooltip} arrow placement="right-start">
-                        <Typography variant='subtitle2' color='primary'>Will any of the workers be required to use restrictive practices ?</Typography>
-                        </Tooltip>
-                        <RadioGroup onChange={(e) => setRestrictivePractices(e.target.value)}>
-                            <FormControlLabel value='Yes' control={<Radio color='primary' />} label='Yes' />
-                            <FormControlLabel value='No' control={<Radio color='primary' />} label='No' />
-                        </RadioGroup>
+            <form className={classes.form} onSubmit={e => handleNext(e)}>
+                <div className={classes.time}>
+                    <Typography variant='subtitle1' color='primary'>1) How much one to one support do you need each week ?</Typography>
+                    <TextField
+                        required
+                        fullWidth
+                        select
+                        size='small'
+                        label='Select a period'
+                        value={supportTime}
+                        onChange={e => setSupportTime(e.target.value)}
+                        variant='outlined'
+                        className={classes.margin}
+                    >
+                        {supportTimeEachWeekArray.map((option, i) => (
+                            <MenuItem key={i} value={option}>
+                                {option}
+                            </MenuItem>
+                        ))}
+                    </TextField>
                 </div>
-                : null
-                    }
-            </div>
-            <div className={classes.medication}>
-                <Typography variant='subtitle1' color='primary'>5) Do you take any prescribed medication ?</Typography>
-                <RadioGroup onChange={(e) => setMedication(e.target.value)}>
-                    <FormControlLabel value='Yes' control={<Radio color='primary' />} label='Yes' />
-                    <FormControlLabel value='No' control={<Radio color='primary' />} label='No' />
-                </RadioGroup>
-                { medication === 'Yes' ? 
-                <div className={classes.padding}>
-                        <Typography variant='subtitle2' color='primary'>Will any of the workers be required to administer medication ?</Typography>
-                        <RadioGroup onChange={(e) => setAdministerMedication(e.target.value)}>
-                            <FormControlLabel value='Yes' control={<Radio color='primary' />} label='Yes' />
-                            <FormControlLabel value='No' control={<Radio color='primary' />} label='No' />
-                        </RadioGroup>
+                <div className={classes.disabilty}>
+                    <Typography variant='subtitle1' color='primary'>2) Tell us a little bit more about your disability ?</Typography>
+                    <TextField
+                        required
+                        variant='outlined'
+                        margin='normal'
+                        required
+                        fullWidth
+                        id='bio'
+                        label='disability'
+                        name='bio'
+                        multiline
+                        rows={7}
+                        value={disability}
+                        onChange={e => setDisability(e.target.value)}
+                    />
                 </div>
-                : null
-                    }
-            </div>
-            <div className={classes.gender}>
-                <Typography variant='subtitle1' color='primary'>6) Do you have a gender preference for who supports you ?</Typography>
-                <RadioGroup onChange={(e) => setGenderPreference(e.target.value)}>
-                    <FormControlLabel value='Male' control={<Radio color='primary' />} label='Male' />
-                    <FormControlLabel value='Female' control={<Radio color='primary' />} label='Female' />
-                    <FormControlLabel value='No' control={<Radio color='primary' />} label='No Preference' />
-                </RadioGroup>
-            </div>
-            <div className={classes.buttons}>
-                <Button
-                    variant='contained'
-                    disabled={activeStep === 0}
-                    onClick={handleBack}
-                    className={classes.backButton}
-                >
-                    Back
-                </Button>
-                <Button variant='contained' color='primary' onClick={handleNext}>
-                    Next
-                </Button>
-            </div>
-            <>
+                <div className={classes.supportType}>
+                    <Typography variant='subtitle1' color='primary'>3) What type of support do you need ?</Typography>
+                    <FormGroup>
+                        {supportTypeArray.map((item, i) => (
+                            <Tooltip key={i} title={item.toolTip} arrow placement="bottom-start">
+                                <FormControlLabel
+                                    control={<Checkbox onChange={handleSupportTypeChange} color='primary' value={item.title} name={item.title} checked={supportType.includes(item.title)}/>}
+                                    label={item.title}
+                                />
+                            </Tooltip>
+                        ))}
+                    </FormGroup>
+                </div>
+                <div className={classes.behaviourSupport}>
+                    <Typography variant='subtitle1' color='primary'>4) Do you require any positive behaviour support ?</Typography>
+                    <RadioGroup onChange={(e) => setBehaviourSupport(e.target.value)} value={behaviourSupport}>
+                        <FormControlLabel value='Yes' control={<Radio color='primary' required/>} label='Yes' />
+                        <FormControlLabel value='No' control={<Radio color='primary' required/>} label='No' />
+                    </RadioGroup>
+                    { behaviourSupport === 'Yes' ? 
+                    <div className={classes.padding}>
+                            <Tooltip title={restrictivePracticesTooltip} arrow placement="right-start">
+                            <Typography variant='subtitle1' color='primary'>Will any of the workers be required to use restrictive practices ?</Typography>
+                            </Tooltip>
+                            <RadioGroup onChange={(e) => setRestrictivePractices(e.target.value)} value={restrictivePractices}>
+                                <FormControlLabel value='Yes' control={<Radio color='primary' required/>} label='Yes' />
+                                <FormControlLabel value='No' control={<Radio color='primary' required/>} label='No' />
+                            </RadioGroup>
+                    </div>
+                    : null
+                        }
+                </div>
+                <div className={classes.medication}>
+                    <Typography variant='subtitle1' color='primary'>5) Do you take any prescribed medication ?</Typography>
+                    <RadioGroup onChange={(e) => setMedication(e.target.value)} value={medication}>
+                        <FormControlLabel value='Yes' control={<Radio color='primary' required/>} label='Yes' />
+                        <FormControlLabel value='No' control={<Radio color='primary' required/>} label='No' />
+                    </RadioGroup>
+                    { medication === 'Yes' ? 
+                    <div className={classes.padding}>
+                            <Typography variant='subtitle1' color='primary'>Will any of the workers be required to administer medication ?</Typography>
+                            <RadioGroup onChange={(e) => setAdministerMedication(e.target.value)} value={administerMedication}>
+                                <FormControlLabel value='Yes' control={<Radio color='primary' required/>} label='Yes' />
+                                <FormControlLabel value='No' control={<Radio color='primary' required/>} label='No' />
+                            </RadioGroup>
+                    </div>
+                    : null
+                        }
+                </div>
+                <div className={classes.gender}>
+                    <Typography variant='subtitle1' color='primary'>6) Do you have a gender preference for who supports you ?</Typography>
+                    <RadioGroup onChange={(e) => setGenderPreference(e.target.value)} value={genderPreference}>
+                        <FormControlLabel value='Male' control={<Radio color='primary' required/>} label='Male' />
+                        <FormControlLabel value='Female' control={<Radio color='primary' required/>} label='Female' />
+                        <FormControlLabel value='No' control={<Radio color='primary' required/>} label='No Preference' />
+                    </RadioGroup>
+                </div>
+                <div className={classes.buttons}>
+                    <Button
+                        variant='contained'
+                        disabled={activeStep === 0}
+                        onClick={handleBack}
+                        className={classes.backButton}
+                    >
+                        Back
+                    </Button>
+                    <Button variant='contained' color='primary' type='submit'>
+                        Next
+                    </Button>
+                </div>
                 <Snackbar open={openError} autoHideDuration={6000} onClose={handleErrorClose}>
                         <Alert onClose={handleErrorClose} severity='error'>
                             {message}
@@ -312,7 +338,7 @@ export default function ClientRegistrationStepTwo({ activeStep, setActiveStep })
                         {message}
                     </Alert>
                 </Snackbar>
-            </>
+            </form>
         </div>
     );
 }

@@ -1,10 +1,11 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { Button, TextField, FormControlLabel, Checkbox, Snackbar,
     Link, Paper, Box, Grid, Typography, Switch} from '@material-ui/core'
 import Alert from '@material-ui/lab/Alert';
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { UserContext } from '../context/UserContext'
 import { firebaseLogin } from '../api/Firebase'
+import { add } from 'date-fns';
 
 function Copyright() {
     return (
@@ -26,7 +27,12 @@ export default function Signin({ history }) {
     const [open, setOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState('')
 
-    const { addUser, addPassword} = useContext(UserContext)
+    useEffect(() => {
+        // console.log(auth.currentUser)
+        // console.log(auth.Presistance)
+    }, [])
+
+    const { addUser, addPassword, addJobs } = useContext(UserContext)
     const theme = useTheme()
 
     const useStyles = makeStyles(() => ({
@@ -74,7 +80,7 @@ export default function Signin({ history }) {
             .then((user) => {
                 addUser(user)
                 addPassword(password)
-                history.push('/dashboard')
+                history.push('/messages')
             })
             .catch((error) => {
                 setErrorMessage(error)

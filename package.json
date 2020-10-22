@@ -19,6 +19,8 @@
     "firebase": "^7.21.0",
     "google-maps-react": "^2.0.6",
     "language-list": "0.0.3",
+    "moment": "^2.29.1",
+    "random-id": "^1.0.4",
     "react": "^16.13.1",
     "react-dark-mode-toggle": "0.0.9",
     "react-dom": "^16.13.1",

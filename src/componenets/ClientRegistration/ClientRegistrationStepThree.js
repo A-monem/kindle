@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Typography, Button, TextField, Snackbar } from '@material-ui/core'
 import Alert from '@material-ui/lab/Alert';
 import { makeStyles, useTheme } from '@material-ui/core/styles'
-import { firebaseAddRefereeInfo } from '../../api/Firebase'
+import { firebaseAddUserInfo } from '../../api/Firebase'
+import { UserContext } from '../../context/UserContext'
 
 export default function ClientRegistrationStepThree({ activeStep, setActiveStep }) {
     const [openError, setOpenError] = useState(false)
@@ -16,9 +17,22 @@ export default function ClientRegistrationStepThree({ activeStep, setActiveStep 
 
     useEffect(() => {
 
+        document.getElementById('kindleApp').scrollIntoView();
+     
+        if (user.referee){
+    
+            setRefereeFirstName(user.referee.firstName)
+            setRefereeLastName(user.referee.lastName)
+            setRefereeEmail(user.referee.email)
+            setRefereePhoneNumber(user.referee.phoneNumber)
+            setRefereeRelationship(user.referee.relationship)
+
+        }
+
     }, [])
 
     const theme = useTheme()
+    const { user, addUser} = useContext(UserContext)
 
     const useStyles = makeStyles(() => ({
         root: {
@@ -66,143 +80,116 @@ export default function ClientRegistrationStepThree({ activeStep, setActiveStep 
         setMessage('')
     }
 
-    const handleNext = () => {
-        
-        const check = checkFields()
+    const handleNext = (e) => {
+        e.preventDefault()
+     
         const refereeInfo = {
-            refereeFirstName,
-            refereeLastName,
-            refereeEmail,
-            refereePhoneNumber,
-            refereeRelationship
+            firstName: refereeFirstName,
+            lastName: refereeLastName,
+            email: refereeEmail,
+            phoneNumber: refereePhoneNumber,
+            relationship: refereeRelationship
         }
 
-        if (true){
-            firebaseAddRefereeInfo(refereeInfo)
-                .then(() => setActiveStep((prevActiveStep) => prevActiveStep + 1))
-                .catch((error) => {
-                    setMessage(error)
-                    setOpenError(true)
-                })
-        } 
+        firebaseAddUserInfo('referee', refereeInfo)
+            .then((user) => {
+                addUser(user)
+                setActiveStep((prevActiveStep) => prevActiveStep + 1)
+            })
+            .catch((error) => {
+                setMessage(error)
+                setOpenError(true)
+            })
+  
     };
 
     const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    };
-
-    const checkFields = () => {
-        if (refereeFirstName) {
-            if (refereeLastName) {
-                if (refereeEmail) {
-                    if (refereePhoneNumber) {
-                        if (refereeRelationship) {
-                            return true
-                        } else {
-                            setMessage('Please make sure you have entered your relationship with your referee')
-                            setOpenError(true)
-                            return false
-                        }
-                    } else {
-                        setMessage('Please make sure you have entered a referee phone number')
-                        setOpenError(true)
-                        return false
-                    }
-                } else {
-                    setMessage('Please make sure you have entered a referee email address')
-                    setOpenError(true)
-                    return false
-                }
-            } else {
-                setMessage('Please make sure you have entered a referee last name')
-                setOpenError(true)
-                return false
-            }
-        } else {
-            setMessage('Please make sure you have entered a referee first name')
-            setOpenError(true)
-            return false
-        }
-    }   
+    }; 
 
     return (
         <div className={classes.root}>
             <div>
-                <Typography variant='subtitle2'>Get verified by providing contact details for a character referee. This might be a person in your support network (such as a support coordinator) who you would be comfortable for us to contact as your account is created. We will contact this person if we need to confirm information.</Typography>
+                <Typography variant='caption'>Get verified by providing contact details for a character referee. This might be a person in your support network (such as a support coordinator) who you would be comfortable for us to contact as your account is created. We will contact this person if we need to confirm information.</Typography>
             </div>
-            <div className={classes.refereeInfo}>
+            <form className={classes.form} onSubmit={e => handleNext(e)}>
+                <div className={classes.refereeInfo}>
+                    <TextField
+                        size='small'
+                        variant="outlined"
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="refereeFirstName"
+                        label="First Name"
+                        name="refereeFirstName"
+                        value={refereeFirstName}
+                        onChange={e => setRefereeFirstName(e.target.value)}
+                    />
+                    <TextField
+                        size='small'
+                        variant="outlined"
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="refereeLastName"
+                        label="Last Name"
+                        name="refereeLastName"
+                        value={refereeLastName}
+                        onChange={e => setRefereeLastName(e.target.value)}
+                    />
+                    <TextField
+                        size='small'
+                        variant="outlined"
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="refereeEmail"
+                        label="Email Address"
+                        name="refereeEmail"
+                        value={refereeEmail}
+                        onChange={e => setRefereeEmail(e.target.value)}
+                    />
                 <TextField
-                    size='small'
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="refereeFirstName"
-                    label="First Name"
-                    name="refereeFirstName"
-                    onChange={e => setRefereeFirstName(e.target.value)}
-                />
-                <TextField
-                    size='small'
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="refereeLastName"
-                    label="Last Name"
-                    name="refereeLastName"
-                    onChange={e => setRefereeLastName(e.target.value)}
-                />
-                <TextField
-                    size='small'
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="refereeEmail"
-                    label="Email Address"
-                    name="refereeEmail"
-                    onChange={e => setRefereeEmail(e.target.value)}
-                />
-               <TextField
-                    size='small'
-                    variant='outlined'
-                    margin='normal'
-                    required
-                    fullWidth
-                    id='refereePhoneNumber'
-                    label='Phone Number'
-                    name='refereePhoneNumber'
-                    type='tel'
-                    placeholder='0444888999'
-                    onChange={e => setRefereePhoneNumber(e.target.value)}
-                />
-                 <TextField
-                    size='small'
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="refereeRelationship"
-                    label="Relationship"
-                    name="refereeRelationship"
-                    onChange={e => setRefereeRelationship(e.target.value)}
-                />
-            </div> 
-            <div className={classes.buttons}>
-                <Button
-                    variant='contained'
-                    disabled={activeStep === 0}
-                    onClick={handleBack}
-                    className={classes.backButton}
-                >
-                    Back
-                </Button>
-                <Button variant='contained' color='primary' onClick={handleNext}>
-                    Next
-                </Button>
-            </div>
-            <>
+                        size='small'
+                        variant='outlined'
+                        margin='normal'
+                        required
+                        fullWidth
+                        id='refereePhoneNumber'
+                        label='Phone Number'
+                        name='refereePhoneNumber'
+                        type='tel'
+                        placeholder='0444888999'
+                        value={refereePhoneNumber}
+                        onChange={e => setRefereePhoneNumber(e.target.value)}
+                    />
+                    <TextField
+                        size='small'
+                        variant="outlined"
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="refereeRelationship"
+                        label="Relationship"
+                        name="refereeRelationship"
+                        value={refereeRelationship}
+                        onChange={e => setRefereeRelationship(e.target.value)}
+                    />
+                </div> 
+                <div className={classes.buttons}>
+                    <Button
+                        variant='contained'
+                        disabled={activeStep === 0}
+                        onClick={handleBack}
+                        className={classes.backButton}
+                    >
+                        Back
+                    </Button>
+                    <Button variant='contained' color='primary' type='submit'>
+                        Next
+                    </Button>
+                </div>
                 <Snackbar open={openError} autoHideDuration={6000} onClose={handleErrorClose}>
                         <Alert onClose={handleErrorClose} severity='error'>
                             {message}
@@ -213,7 +200,7 @@ export default function ClientRegistrationStepThree({ activeStep, setActiveStep 
                         {message}
                     </Alert>
                 </Snackbar>
-            </>
+            </form>
         </div>
     );
 }

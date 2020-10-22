@@ -19,7 +19,7 @@ export default function Timetable({ history }){
         .then(() => {
             firebaseGetTimetable()
             .then((timetable) => {
-                console.log(timetable)
+                //console.log(timetable)
                 setTimetable(timetable)
             })
             .catch((error) => console.log(error))
@@ -66,7 +66,7 @@ export default function Timetable({ history }){
             <Typography variant="h6" >
                 Timetable
             </Typography>
-            <TextField
+            {/* <TextField
                 id="startDate"
                 label="start date"
                 type="datetime-local"
@@ -113,7 +113,7 @@ export default function Timetable({ history }){
                 } 
             >
                 Add Event
-                </Button>
+                </Button> */}
             {
                 timetable 
                 ? (
@@ -123,7 +123,7 @@ export default function Timetable({ history }){
                         >
                              <ViewState
                                 defaultCurrentDate={today}
-                                defaultCurrentViewName="Week"
+                                defaultCurrentViewName="Day"
                             />
                             <DayView
                                 startDayHour={0}

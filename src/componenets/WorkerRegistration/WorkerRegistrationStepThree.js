@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext} from 'react';
 import { Typography, Button, RadioGroup, Radio, FormControlLabel, TableContainer, Table, TableHead, TableBody, TableCell,
-    FormGroup, TextField, MenuItem, Snackbar, Grid, Icon, IconButton, TableRow, Paper, Checkbox} from '@material-ui/core'
+    FormGroup, TextField, MenuItem, Snackbar, Grid, Icon, IconButton, TableRow, Paper} from '@material-ui/core'
 import Alert from '@material-ui/lab/Alert';
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { firebaseAddUserInfo } from '../../api/Firebase'
@@ -61,8 +61,11 @@ export default function WorkerRegistrationStepThree({ activeStep, setActiveStep 
             display: 'flex', 
             justifyContent: 'center'
         },
+        form: {
+            width: '100%'
+        },
         highestEducation: {
-            marginTop: theme.spacing(10),
+            marginTop: theme.spacing(2),
             width: '50%'
         }, 
         qualification: {
@@ -95,9 +98,10 @@ export default function WorkerRegistrationStepThree({ activeStep, setActiveStep 
         setMessage('')
     }
 
-    const handleNext = () => {
-        const check = checkFields()
-        
+    const handleNext = (e) => {
+        // const check = checkFields()
+        e.preventDefault()
+
         const education = {
             level: highestEducation,
             area: areaOfEducation, 
@@ -164,108 +168,110 @@ export default function WorkerRegistrationStepThree({ activeStep, setActiveStep 
 
     return (
         <div className={classes.root}>
-            <div className={classes.highestEducation}>
-                <Typography variant='subtitle1' color='primary'>1) What is the highest level of education you have achieved ?</Typography>
-                <RadioGroup onChange={(e) => setHighestEducation(e.target.value)} value={highestEducation}>
-                    {educationOptions.map((item, i) => (
-                        <FormControlLabel key={i} value={item} control={<Radio color='primary' />} label={item} />
-                    ))}
-                </RadioGroup>
-                {highestEducation && highestEducation !== 'Primary education' && highestEducation !== 'Secondary education'
-                ?   <TextField
-                        fullWidth
-                        select
-                        required
-                        className={classes.margin}
-                        size='small'
-                        label='Select area of education'
-                        value={areaOfEducation}
-                        onChange={(e) => setAreaOfEducation(e.target.value)}
-                        variant='outlined'
-                    >
-                        {areaOfEducationOptions.map((option, i) => (
-                            <MenuItem key={i} value={option}>
-                                {option}
-                            </MenuItem>
+            <form className={classes.form} onSubmit={e => handleNext(e)}>
+                <div className={classes.highestEducation}>
+                    <Typography variant='subtitle1' color='primary'>1) What is the highest level of education you have achieved ?</Typography>
+                    <RadioGroup onChange={(e) => setHighestEducation(e.target.value)} value={highestEducation} >
+                        {educationOptions.map((item, i) => (
+                            <FormControlLabel key={i} value={item} control={<Radio color='primary' required/>} label={item} />
                         ))}
-                    </TextField>
-                : null}
-            </div>
-            <div className={classes.qualification}>
-                <Typography variant='subtitle1' color='primary'>2) Do you hold any other relevant qualifications ?</Typography>
-                <Grid container spacing={2}>
-                    <Grid item xs={6} className={classes.qualificationAdd}>
+                    </RadioGroup>
+                    {highestEducation && highestEducation !== 'Primary education' && highestEducation !== 'Secondary education'
+                    ? <div style={{paddingTop: theme.spacing(2), paddingLeft: theme.spacing(2)}}>
                         <TextField
-                            size='small'
-                            variant='outlined'
-                            margin='normal'
                             fullWidth
-                            id='qualification'
-                            label='Qualification'
-                            name='qualification'
-                            value={otherQualificationHolder}
-                            onChange={e => setOtherQualificationHolder(e.target.value)}
-                        />
-                        <TextField
+                            select
+                            required
+                            className={classes.margin}
                             size='small'
+                            label='Select area of education'
+                            value={areaOfEducation}
+                            onChange={(e) => setAreaOfEducation(e.target.value)}
                             variant='outlined'
-                            margin='normal'
-                            fullWidth
-                            id='year'
-                            label='Year completed'
-                            name='year'
-                            value={otherQualificationYearHolder}
-                            onChange={e => setOtherQualificationYearHolder(e.target.value)}
-                        />
-                        <IconButton onClick={handleAddQualification}>
-                            <Icon color='primary' fontSize='large'>add_circle</Icon>
-                        </IconButton>
+                        >
+                            {areaOfEducationOptions.map((option, i) => (
+                                <MenuItem key={i} value={option}>
+                                    {option}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </div>    
+                    : null}
+                </div>
+                <div className={classes.qualification}>
+                    <Typography variant='subtitle1' color='primary'>2) Do you hold any other relevant qualifications ?</Typography>
+                    <Grid container spacing={2}>
+                        <Grid item xs={6} className={classes.qualificationAdd}>
+                            <TextField
+                                size='small'
+                                variant='outlined'
+                                margin='normal'
+                                fullWidth
+                                id='qualification'
+                                label='Qualification'
+                                name='qualification'
+                                value={otherQualificationHolder}
+                                onChange={e => setOtherQualificationHolder(e.target.value)}
+                            />
+                            <TextField
+                                size='small'
+                                variant='outlined'
+                                margin='normal'
+                                fullWidth
+                                id='year'
+                                label='Year completed'
+                                name='year'
+                                value={otherQualificationYearHolder}
+                                onChange={e => setOtherQualificationYearHolder(e.target.value)}
+                            />
+                            <IconButton onClick={handleAddQualification}>
+                                <Icon color='primary' fontSize='large'>add_circle</Icon>
+                            </IconButton>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TableContainer component={Paper} className={classes.margin}>
+                                <Table size="small" aria-label="simple table">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>Qualification</TableCell>
+                                            <TableCell>Year</TableCell>
+                                            <TableCell align="right"></TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                    {otherQualifications.map((row, i) => (
+                                        <TableRow key={row.name}>
+                                        <TableCell component="th" scope="row">
+                                            {row.qualification}
+                                        </TableCell>
+                                        <TableCell>{row.year}</TableCell>
+                                        <TableCell align="right">
+                                            <IconButton onClick={() => handleDeleteQualification(row)}>
+                                                <DeleteForeverIcon color='primary' />
+                                            </IconButton>
+                                        </TableCell>
+                                        </TableRow>
+                                    ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={6}>
-                        <TableContainer component={Paper}>
-                            <Table size="small" aria-label="simple table">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Qualification</TableCell>
-                                        <TableCell>Year</TableCell>
-                                        <TableCell align="right"></TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                {otherQualifications.map((row, i) => (
-                                    <TableRow key={row.name}>
-                                    <TableCell component="th" scope="row">
-                                        {row.qualification}
-                                    </TableCell>
-                                    <TableCell>{row.year}</TableCell>
-                                    <TableCell align="right">
-                                        <IconButton onClick={() => handleDeleteQualification(row)}>
-                                            <DeleteForeverIcon color='primary' />
-                                        </IconButton>
-                                    </TableCell>
-                                    </TableRow>
-                                ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Grid>
-                </Grid>
-                
-            </div>
-            <div className={classes.buttons}>
-                <Button
-                    variant='contained'
-                    disabled={activeStep === 0}
-                    onClick={handleBack}
-                    className={classes.backButton}
-                >
-                    Back
-                </Button>
-                <Button variant='contained' color='primary' onClick={handleNext}>
-                    Next
-                </Button>
-            </div>
-            <>
+                    
+                </div>
+                <div className={classes.buttons}>
+                    <Button
+                        variant='contained'
+                        disabled={activeStep === 0}
+                        onClick={handleBack}
+                        className={classes.backButton}
+                    >
+                        Back
+                    </Button>
+                    <Button variant='contained' color='primary' type='submit'>
+                        Next
+                    </Button>
+                </div>
                 <Snackbar open={openError} autoHideDuration={6000} onClose={handleErrorClose}>
                         <Alert onClose={handleErrorClose} severity='error'>
                             {message}
@@ -276,7 +282,7 @@ export default function WorkerRegistrationStepThree({ activeStep, setActiveStep 
                         {message}
                     </Alert>
                 </Snackbar>
-            </>
+            </form>
         </div>
     );
 }

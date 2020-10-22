@@ -3,6 +3,8 @@ import 'firebase/auth'
 import 'firebase/firestore'
 import 'firebase/storage'
 import 'firebase/analytics'
+import 'firebase/messaging'
+import randomId from 'random-id'
 
 var firebaseConfig = {
     apiKey: process.env.REACT_APP_FIREBASE_KEY,
@@ -18,9 +20,13 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig)
 firebase.analytics()
 
+const len = 10
+const pattern = 'aA0'
+
 export const auth = firebase.auth()
 export const firestore = firebase.firestore()
 export const storage = firebase.storage()
+export const messaging = firebase.messaging()
 
 export const firebaseRecaptchaGenerator = () => {
   window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container')
@@ -78,20 +84,20 @@ export const firebaseSendVerificationEmail = () => {
 
 export const firebaseLogin = (email, password) => {
   return new Promise((resolve, reject) => {
-      auth.signInWithEmailAndPassword(email, password)
+        auth.signInWithEmailAndPassword(email, password)
         .then(() => {
-          if (auth.currentUser.emailVerified){
+         // if (auth.currentUser.emailVerified){
             firestore.collection('users').doc(auth.currentUser.uid).get()
             .then((user) => {
               resolve(user.data())
             })
             .catch(error => reject(error.message))
-          } else {
-            firebaseSendVerificationEmail()
-            reject('Please verifiy your email address. Check your email address inbox or junk mail to verify')
-          }
+          // } else {
+          //   firebaseSendVerificationEmail()
+          //   reject('Please verifiy your email address. Check your email address inbox or junk mail to verify')
+          // }
         })
-        .catch(error => reject(error.message))
+        .catch(error => reject(error.message))  
   })
 }
 
@@ -112,7 +118,7 @@ export const firebaseAddUserPersonalInfo = (profilePictureUrl, languageList, add
         console.log({profilePictureUrl}, {languageList}, {address}, {mobileNumber}, {emergency}, {gender}, {birthday}, {birthCountry}, {bio})
         let user = info.data()
         console.log(user)
-        user['profilePictureUrl'] = profilePictureUrl
+        user['avatar'] = profilePictureUrl
         user['languages'] = languageList
         user['address'] = address
         user['mobileNumber'] = mobileNumber
@@ -132,48 +138,6 @@ export const firebaseAddUserPersonalInfo = (profilePictureUrl, languageList, add
   })
 }
 
-export const firebaseAddDisabilityInfo = (disabilityInfo) => {
-  return new Promise((resolve, reject) => {
-    firestore.collection('users').doc(auth.currentUser.uid).get()
-      .then((info) => {
-        let user = info.data()
-        user['disabilityInfo'] = disabilityInfo
-        firestore.collection('users').doc(auth.currentUser.uid).set(user)
-          .then(() => resolve())
-          .catch(error => reject(error.message))
-      })
-      .catch(error => reject(error.message))
-  })
-}
-
-export const firebaseAddRefereeInfo = (refereeInfo) => {
-  return new Promise((resolve, reject) => {
-    firestore.collection('users').doc(auth.currentUser.uid).get()
-      .then((info) => {
-        let user = info.data()
-        user['referee'] = refereeInfo
-        firestore.collection('users').doc(auth.currentUser.uid).set(user)
-          .then(() => resolve())
-          .catch(error => reject(error.message))
-      })
-      .catch(error => reject(error.message))
-  })
-}
-
-export const firebaseAddFinancialInfo = (financialInfo) => {
-  return new Promise((resolve, reject) => {
-    firestore.collection('users').doc(auth.currentUser.uid).get()
-      .then((info) => {
-        let user = info.data()
-        user['financial'] = financialInfo
-        firestore.collection('users').doc(auth.currentUser.uid).set(user)
-          .then(() => resolve())
-          .catch(error => reject(error.message))
-      })
-      .catch(error => reject(error.message))
-  })
-}
-
 export const firebaseAddUserInfo = (name, newInfo) => {
   return new Promise((resolve, reject) => {
     firestore.collection('users').doc(auth.currentUser.uid).get()
@@ -188,9 +152,19 @@ export const firebaseAddUserInfo = (name, newInfo) => {
   })
 }
 
-export const firebaseGetServiceAgreementUrl = () => {
+export const firebaseGetUserInfo = (id) => {
   return new Promise((resolve, reject) => {
-    storage.ref('service_agreement/Kindle_Service_Agreement.pdf').getDownloadURL()
+    firestore.collection('users').doc(id).get()
+      .then((info) => {
+        resolve(info.data())
+      })
+      .catch(error => reject(error.message))
+  })
+}
+
+export const firebaseGetServiceAgreementUrl = (document) => {
+  return new Promise((resolve, reject) => {
+    storage.ref(`service_agreement/${document}.pdf`).getDownloadURL()
       .then((url) => resolve(url))
       .catch(error => reject(error.message))
   })
@@ -209,8 +183,6 @@ export const firebaseSetRegistrationComplete = () => {
     .catch(error => reject(error.message))
   })
 }
-
-// **************************************************************** //
 
 export const firebaseGetTimetable = (userId) => {
   return new Promise((resolve, reject) => {
@@ -249,7 +221,7 @@ export const firebaseAddEventToTimetable = (event) => {
     .then((info) => {
       let user = info.data()
       let timetable = user.timetable
-      console.log(timetable)
+      //console.log(timetable)
       timetable.push(event)
       user['timetable'] = timetable
       firestore.collection('users').doc(auth.currentUser.uid).set(user)
@@ -259,4 +231,114 @@ export const firebaseAddEventToTimetable = (event) => {
     .catch(error => reject(error.message))
   })
 }
+
+// export const firebasePostJob = (job) => {
+//   return new Promise((resolve, reject) => {
+//     firestore.collection('jobs').doc(auth.currentUser.uid).get()
+//     .then((info) => {
+//       let oldJobs = info.data()
+//       let jobsObject = {}
+
+//       if(oldJobs){
+//         jobsObject['jobs'] = [...oldJobs.jobs, job]
+//       } else {
+//         jobsObject['jobs'] = [job]
+//       }
+
+//       firestore.collection('jobs').doc(auth.currentUser.uid).set(jobsObject)
+//         .then(() => resolve(jobsObject.jobs))
+//         .catch(error => reject(error.message))
+//     })
+//     .catch(error => reject(error.message))
+//   })
+// }
+
+// export const firebaseDeleteJob = (id) => {
+//   return new Promise((resolve, reject) => {
+//     firestore.collection('jobs').doc(auth.currentUser.uid).get()
+//     .then((info) => {
+//       console.log(id)
+//       let filteredJobs = {}
+
+//       filteredJobs['jobs'] = info.data().jobs.filter((job) => (
+//           job.postTime !== id
+//       ))
+
+//       console.log(filteredJobs.jobs)
+
+//       firestore.collection('jobs').doc(auth.currentUser.uid).set(filteredJobs)
+//         .then(() => resolve(filteredJobs.jobs))
+//         .catch(error => reject(error.message))
+//     })
+//     .catch(error => reject(error.message))
+//   })
+// }
+
+
+export const firebasePostJob = (job) => {
+  return new Promise((resolve, reject) => {
+
+      const id = randomId(len, pattern)
+      
+      job['jobId'] = id
+
+      firestore.collection('jobs').doc(id).set(job)
+        .then(() => {
+            firestore.collection('jobs').where( 'id' ,'==', auth.currentUser.uid).get()
+              .then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    console.log(doc.data());
+                    resolve()
+                });
+              })
+              .catch(error => reject(error.message))
+        })
+        .catch(error => reject(error.message))
+
+  })
+}
+
+export const firebaseDeleteJob = (postTime) => {
+  return new Promise((resolve, reject) => {
+  
+    firestore.collection('jobs').where( 'id' ,'==', auth.currentUser.uid).where( 'postTime' ,'==', postTime).get()
+      .then((snapshot) => {
+        snapshot.forEach((doc) =>{
+          firestore.collection('jobs').doc(doc.id).delete()
+        });
+      })
+      .then(() => resolve())
+      .catch(error => reject(error.message))
+
+  })
+}
+
+export const firebaseSendMessage = (message) => {
+  return new Promise((resolve, reject) => {
+    
+    const id = randomId(len, pattern)
+
+    firestore.collection('messages').doc(id).set(message)
+      .then(() => resolve())
+      .catch(error => reject(error.message))
+
+  })
+}
+
+export const firebaseReplyMessage = (id, message) => {
+  return new Promise((resolve, reject) => {
+    firestore.collection('messages').doc(id).get()
+      .then((info) => {
+        let data = info.data()
+        data.messages.push(message)
+        firestore.collection('messages').doc(id).set(data)
+          .then(() => resolve())
+          .catch(error => reject(error.message))
+      })
+      .catch(error => reject(error.message))
+  })
+}
+
+
+
 
