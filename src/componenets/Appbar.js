@@ -1,5 +1,5 @@
-import React, { useContext, useState, useEffect} from 'react'
-import { AppBar, Toolbar, IconButton, Menu, MenuItem, Typography, Button } from '@material-ui/core'
+import React, { useContext, useState } from 'react'
+import { AppBar, Toolbar, IconButton, Menu, MenuItem, Typography, Button, Badge } from '@material-ui/core'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { UserContext } from '../context/UserContext'
 import { ThemeContext } from '../context/ThemeContext'
@@ -8,10 +8,10 @@ import DarkModeToggle from "react-dark-mode-toggle";
 import { withRouter } from "react-router";
 import { firebaseLogout } from '../api/Firebase'
 
-export function Appbar({ history }) {
+export function Appbar({ history, location}) {
     
     const theme = useTheme()
-    const { user, addUser } = useContext(UserContext)
+    const { user, addUser, messagesBadge, setMessageBadge} = useContext(UserContext)
     const { darkMode, toggleTheme } = useContext(ThemeContext)
     const [anchorEl, setAnchorEl] = useState(null);
     const isMenuOpen = Boolean(anchorEl);
@@ -65,11 +65,21 @@ export function Appbar({ history }) {
                     {user
                     ? (
                         <div style={{marginLeft: theme.spacing(4), display: 'inline'}}>
-                            <Button color="primary" size='small' style={{marginRight: theme.spacing(2)}} onClick={() => history.replace('/dashboard')}>Dashboard</Button>
-                            <Button color="primary" size='small' style={{marginRight: theme.spacing(2)}} onClick={() => history.replace('/dashboard')}>Search</Button>
-                            <Button color="primary" size='small' style={{marginRight: theme.spacing(2)}} onClick={() => history.replace('/dashboard')}>Bookings</Button>
-                            <Button color="primary" size='small' style={{marginRight: theme.spacing(2)}} onClick={() => history.replace('/jobs')}>Job Board</Button>
-                            <Button color="primary" size='small' style={{marginRight: theme.spacing(2)}} onClick={() => history.replace('/messages')}>Messages</Button>
+                            <Button color="primary" size='small' style={{marginLeft: theme.spacing(2)}} onClick={() => history.replace('/dashboard')}>Dashboard</Button>
+                            <Button color="primary" size='small' style={{marginLeft: theme.spacing(2)}} onClick={() => history.replace('/dashboard')}>Search</Button>
+                            <Button color="primary" size='small' style={{marginLeft: theme.spacing(2)}} onClick={() => history.replace('/dashboard')}>Bookings</Button>
+                            <Button color="primary" size='small' style={{marginLeft: theme.spacing(2)}} onClick={() => history.replace('/jobs')}>Job Board</Button>
+                            <Button 
+                                color="primary" 
+                                size='small' 
+                                style={{marginLeft: theme.spacing(2)}} 
+                                onClick={() => {
+                                    setMessageBadge(true)
+                                    history.replace('/messages')
+                                }}
+                            >
+                                <Badge  color="secondary" variant="dot" invisible={messagesBadge || location.pathname === '/messages'}>Messages</Badge>
+                            </Button>
                         </div>
                     )
                     : null}

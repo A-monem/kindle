@@ -147,6 +147,7 @@ export default function OpenJobs({ setEdit, setJobId }){
             title: job.title,
             jobId: job.id,
             jobPostTime: job.postTime,
+            status: 'new',
             messages: [{
                 body: enquiryMessage,
                 sender: 'worker',

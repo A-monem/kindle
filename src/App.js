@@ -49,7 +49,7 @@ function App() {
               <Route component={Error} />
             </Switch>
           </div>
-          </ScrollToTop>
+        </ScrollToTop>
       </Router>
     </CombinedContextProvider>
   )

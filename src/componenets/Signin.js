@@ -80,7 +80,7 @@ export default function Signin({ history }) {
             .then((user) => {
                 addUser(user)
                 addPassword(password)
-                history.push('/messages')
+                history.push('/dashboard')
             })
             .catch((error) => {
                 setErrorMessage(error)

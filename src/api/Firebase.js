@@ -5,6 +5,7 @@ import 'firebase/storage'
 import 'firebase/analytics'
 import 'firebase/messaging'
 import randomId from 'random-id'
+import moment from 'moment'
 
 var firebaseConfig = {
     apiKey: process.env.REACT_APP_FIREBASE_KEY,
@@ -232,49 +233,6 @@ export const firebaseAddEventToTimetable = (event) => {
   })
 }
 
-// export const firebasePostJob = (job) => {
-//   return new Promise((resolve, reject) => {
-//     firestore.collection('jobs').doc(auth.currentUser.uid).get()
-//     .then((info) => {
-//       let oldJobs = info.data()
-//       let jobsObject = {}
-
-//       if(oldJobs){
-//         jobsObject['jobs'] = [...oldJobs.jobs, job]
-//       } else {
-//         jobsObject['jobs'] = [job]
-//       }
-
-//       firestore.collection('jobs').doc(auth.currentUser.uid).set(jobsObject)
-//         .then(() => resolve(jobsObject.jobs))
-//         .catch(error => reject(error.message))
-//     })
-//     .catch(error => reject(error.message))
-//   })
-// }
-
-// export const firebaseDeleteJob = (id) => {
-//   return new Promise((resolve, reject) => {
-//     firestore.collection('jobs').doc(auth.currentUser.uid).get()
-//     .then((info) => {
-//       console.log(id)
-//       let filteredJobs = {}
-
-//       filteredJobs['jobs'] = info.data().jobs.filter((job) => (
-//           job.postTime !== id
-//       ))
-
-//       console.log(filteredJobs.jobs)
-
-//       firestore.collection('jobs').doc(auth.currentUser.uid).set(filteredJobs)
-//         .then(() => resolve(filteredJobs.jobs))
-//         .catch(error => reject(error.message))
-//     })
-//     .catch(error => reject(error.message))
-//   })
-// }
-
-
 export const firebasePostJob = (job) => {
   return new Promise((resolve, reject) => {
 
@@ -339,6 +297,59 @@ export const firebaseReplyMessage = (id, message) => {
   })
 }
 
+export const firebaseGetUserMessages = (user) => {
+  return new Promise((resolve, reject) => {
+
+    let queryId = ''
+    let otherUserId = ''
+    let messages = []
+
+    if (user.type === 'client') {
+      queryId = 'clientId'
+      otherUserId = 'workerId'
+    } else if ((user.type === 'worker')) {
+      queryId = 'workerId'
+      otherUserId = 'clientId'
+    }
+
+      firestore.collection('messages').where( queryId ,'==', auth.currentUser.uid).get()
+          .then((snapshot) => {
+            snapshot.forEach((doc, i) => {
+              let messageHolder = doc.data()
+            
+              firebaseGetUserInfo(messageHolder[otherUserId])
+                  .then((otherUser) => {
+                  
+                      messageHolder['otherUser'] = otherUser
+                      messageHolder['jobPostTime'] = moment(messageHolder.jobPostTime).format('MMMM Do YYYY, h:mm a')
+                      messageHolder['docId'] = doc.id
+                      messages.push(messageHolder)
+                  })
+                  .then(() => {
+                    if (messages.length === snapshot.size){
+                      resolve(messages)
+                    }
+                  })
+                  .catch(error => reject(error.message))
+            })
+          })
+          .catch(error => reject(error.message))
+  })
+}
+
+export const firebaseSetMessageAsRead = (id) => {
+  return new Promise((resolve, reject) => {
+
+      firestore.collection('messages').doc(id).get()
+          .then((doc) => {
+              let msg = doc.data()
+              msg['status'] = 'read'
+              firestore.collection('messages').doc(id).set(msg)
+              .then(() => resolve())
+          })
+          .catch(error => reject(error.message))
+  })
+}
 
 
 

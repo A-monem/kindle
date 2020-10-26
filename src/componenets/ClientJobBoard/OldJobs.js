@@ -11,8 +11,8 @@ export default function OldJobs({ setEdit, setJobToBeEdited }){
     const [OldJobs, setOldJobs] = useState([])
 
     useEffect(() => {
-
-        const unsubscribe = firestore.collection('jobs').where( 'id' ,'==', auth.currentUser.uid)
+        console.log('i am in old jobs')
+        const unsubscribeOldJobs = firestore.collection('jobs').where( 'clientId' ,'==', auth.currentUser.uid)
             .onSnapshot((snapshot) => {
                 let jobHolder = []
                 snapshot.forEach((job) => {
@@ -23,7 +23,7 @@ export default function OldJobs({ setEdit, setJobToBeEdited }){
         })
 
         return () => {
-            unsubscribe()
+            unsubscribeOldJobs()
           };
 
     }, [])

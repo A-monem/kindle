@@ -23,67 +23,67 @@ export default function Messages({ history }) {
 
     useEffect(() => {
 
-        let unsubscribe
+        // let unsubscribe
 
-        if (user) {
-            if (user.type === 'client') {
-                unsubscribe = firestore.collection('messages').where( 'clientId' ,'==', auth.currentUser.uid)
-                    .onSnapshot((snapshot) => {
+        // if (user) {
+        //     if (user.type === 'client') {
+        //         unsubscribe = firestore.collection('messages').where( 'clientId' ,'==', auth.currentUser.uid)
+        //             .onSnapshot((snapshot) => {
                         
-                        setAllMessages([])
+        //                 setAllMessages([])
         
-                        snapshot.forEach((info) => {
-                            let messageHolder = info.data()
-                            firebaseGetUserInfo(messageHolder.workerId)
-                                .then((otherUser) => {
-                                    messageHolder['otherUser'] = otherUser
-                                    messageHolder['jobPostTime'] = moment(messageHolder.jobPostTime).format('MMMM Do YYYY, h:mm a')
-                                    messageHolder['docId'] = info.id
-                                    setAllMessages((prevState) => [messageHolder, ...prevState])
-                                    if(!loadMessage){
-                                        setLoadMessage(messageHolder)
-                                    }
-                                })
-                                .catch((error) => {
-                                    setMessage('Sending message failed')
-                                    setOpenError(true)
-                                })
-                        })
-                    })
+        //                 snapshot.forEach((info) => {
+        //                     let messageHolder = info.data()
+        //                     firebaseGetUserInfo(messageHolder.workerId)
+        //                         .then((otherUser) => {
+        //                             messageHolder['otherUser'] = otherUser
+        //                             messageHolder['jobPostTime'] = moment(messageHolder.jobPostTime).format('MMMM Do YYYY, h:mm a')
+        //                             messageHolder['docId'] = info.id
+        //                             setAllMessages((prevState) => [messageHolder, ...prevState])
+        //                             if(!loadMessage){
+        //                                 setLoadMessage(messageHolder)
+        //                             }
+        //                         })
+        //                         .catch((error) => {
+        //                             setMessage('Sending message failed')
+        //                             setOpenError(true)
+        //                         })
+        //                 })
+        //             })
 
-            } else if ((user.type === 'worker')) {
-                unsubscribe = firestore.collection('messages').where( 'workerId' ,'==', auth.currentUser.uid)
-                    .onSnapshot((snapshot) => {
+        //     } else if ((user.type === 'worker')) {
+        //         unsubscribe = firestore.collection('messages').where( 'workerId' ,'==', auth.currentUser.uid)
+        //             .onSnapshot((snapshot) => {
 
-                    setAllMessages([])
+        //             setAllMessages([])
 
-                    snapshot.forEach((info) => {
-                        let messageHolder = info.data()
-                        firebaseGetUserInfo(messageHolder.clientId)
-                            .then((otherUser) => {
-                                messageHolder['otherUser'] = otherUser
-                                messageHolder['jobPostTime'] = moment(messageHolder.jobPostTime).format('MMMM Do YYYY, h:mm a')
-                                messageHolder['docId'] = info.id
-                                setAllMessages((prevState) => [messageHolder, ...prevState])
-                                // console.log(loadMessage)
-                                // if(!loadMessage){
-                                //     setLoadMessage(messageHolder)
-                                // }
-                            })
-                            .catch((error) => {
-                                setMessage('Sending message failed')
-                                setOpenError(true)
-                            })
-                    })
-                })
-            }
-        }
+        //             snapshot.forEach((info) => {
+        //                 let messageHolder = info.data()
+        //                 firebaseGetUserInfo(messageHolder.clientId)
+        //                     .then((otherUser) => {
+        //                         messageHolder['otherUser'] = otherUser
+        //                         messageHolder['jobPostTime'] = moment(messageHolder.jobPostTime).format('MMMM Do YYYY, h:mm a')
+        //                         messageHolder['docId'] = info.id
+        //                         setAllMessages((prevState) => [messageHolder, ...prevState])
+        //                         // console.log(loadMessage)
+        //                         // if(!loadMessage){
+        //                         //     setLoadMessage(messageHolder)
+        //                         // }
+        //                     })
+        //                     .catch((error) => {
+        //                         setMessage('Sending message failed')
+        //                         setOpenError(true)
+        //                     })
+        //             })
+        //         })
+        //     }
+        // }
 
-        return () => {
-            if (unsubscribe) {
-                unsubscribe()
-            }
-        };
+        // return () => {
+        //     if (unsubscribe) {
+        //         unsubscribe()
+        //     }
+        // };
 
     }, [])
 

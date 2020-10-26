@@ -1,16 +1,15 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext} from 'react';
 import { Button, Typography, Paper, FormLabel, TextField, Snackbar, Grid, Avatar, ListItemAvatar,
     Checkbox, Link, Box, List, ListItem, Divider, ListItemText, IconButton} from '@material-ui/core'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import Alert from '@material-ui/lab/Alert';
 import { UserContext } from '../context/UserContext'
-import { firestore, auth, firebaseGetUserInfo, firebaseReplyMessage} from '../api/Firebase'
+import { firebaseReplyMessage, firebaseGetUserMessages, firestore, auth, firebaseSetMessageAsRead} from '../api/Firebase'
 import { Redirect } from "react-router-dom"
 import Registration from './Registration'
 import EmailIcon from '@material-ui/icons/Email'
 import SendIcon from '@material-ui/icons/Send'
 import moment from 'moment'
-import { Restaurant } from '@material-ui/icons';
 
 export default function Messages({ history }) {
     
@@ -19,77 +18,23 @@ export default function Messages({ history }) {
     const [message, setMessage] = useState('')
     const [allMessages, setAllMessages] = useState([])
     const [loadMessage, setLoadMessage] = useState(null)
+    const [index, setIndex] = useState(0)
     const [replyMessage, setReplyMessage] = useState('')
+    const theme = useTheme()
+    const { user, messagesBadge, setMessageBadge} = useContext(UserContext)
+
 
     useEffect(() => {
 
-        let unsubscribe
-
-        if (user) {
-            if (user.type === 'client') {
-                unsubscribe = firestore.collection('messages').where( 'clientId' ,'==', auth.currentUser.uid)
-                    .onSnapshot((snapshot) => {
-                        
-                        setAllMessages([])
+        getMessages()
+        setMessageBadge(true)
         
-                        snapshot.forEach((info) => {
-                            let messageHolder = info.data()
-                            firebaseGetUserInfo(messageHolder.workerId)
-                                .then((otherUser) => {
-                                    messageHolder['otherUser'] = otherUser
-                                    messageHolder['jobPostTime'] = moment(messageHolder.jobPostTime).format('MMMM Do YYYY, h:mm a')
-                                    messageHolder['docId'] = info.id
-                                    setAllMessages((prevState) => [messageHolder, ...prevState])
-                                    if(!loadMessage){
-                                        setLoadMessage(messageHolder)
-                                    }
-                                })
-                                .catch((error) => {
-                                    setMessage('Sending message failed')
-                                    setOpenError(true)
-                                })
-                        })
-                    })
-
-            } else if ((user.type === 'worker')) {
-                unsubscribe = firestore.collection('messages').where( 'workerId' ,'==', auth.currentUser.uid)
-                    .onSnapshot((snapshot) => {
-
-                    setAllMessages([])
-
-                    snapshot.forEach((info) => {
-                        let messageHolder = info.data()
-                        firebaseGetUserInfo(messageHolder.clientId)
-                            .then((otherUser) => {
-                                messageHolder['otherUser'] = otherUser
-                                messageHolder['jobPostTime'] = moment(messageHolder.jobPostTime).format('MMMM Do YYYY, h:mm a')
-                                messageHolder['docId'] = info.id
-                                setAllMessages((prevState) => [messageHolder, ...prevState])
-                                // console.log(loadMessage)
-                                // if(!loadMessage){
-                                //     setLoadMessage(messageHolder)
-                                // }
-                            })
-                            .catch((error) => {
-                                setMessage('Sending message failed')
-                                setOpenError(true)
-                            })
-                    })
-                })
-            }
+        return () => {
+            setMessageBadge(true)
         }
 
-        return () => {
-            if (unsubscribe) {
-                unsubscribe()
-            }
-        };
-
-    }, [])
-
-    const theme = useTheme()
-    const { user } = useContext(UserContext)
-
+    }, [messagesBadge])
+   
     const useStyles = makeStyles(() => ({
         root: {
             width: '100%',
@@ -116,7 +61,14 @@ export default function Messages({ history }) {
             padding: theme.spacing(2),
             width: '80%',
             overflow: 'auto',
-            height: '60%', 
+            height: '60vh', 
+        },
+        select: {
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%',
         },
         paper3: {
             width: '80%',
@@ -127,6 +79,11 @@ export default function Messages({ history }) {
             justifyContent: 'space-between',
             alignItems: 'center',
         },
+        avatar: {
+            width: theme.spacing(7),
+            height: theme.spacing(7),
+            marginRight: theme.spacing(2)
+        }, 
         me: {
             textAlign: 'right',
             padding: theme.spacing(2),
@@ -144,6 +101,9 @@ export default function Messages({ history }) {
             background: theme.palette.secondary.light,
             padding: theme.spacing(2),
             borderRadius: 20,
+        }, 
+        new: {
+            background: theme.palette.secondary.light
         }
 
     }))
@@ -166,26 +126,55 @@ export default function Messages({ history }) {
         setMessage('')
     }
 
-    const handleLoadMessage = (selectedMessage) => {
-        setLoadMessage(selectedMessage)
+    const handleLoadMessage = (i) => {
+
+        
+        // let chatHistory = document.getElementById('messagingPlatform')
+        // chatHistory.scrollTop = chatHistory.scrollHeight
+
+        setIndex(i)
+        //document.getElementById('messagingPlatform').scrollIntoView();
+
+        //let chatHistory = document.getElementById('messagingPlatform')
+        //chatHistory.scrollTop = chatHistory.scrollHeight
+
     }
 
     const handleSendMessage = () => {
-        
-        const messageObject = {
-            body: replyMessage,
-            sender: user.type, 
-            time: Date.now()
+
+        if(replyMessage){
+             
+            const messageObject = {
+                body: replyMessage,
+                sender: user.type, 
+                time: Date.now()
+            }
+
+            firebaseReplyMessage(allMessages[index].docId, messageObject)
+                .then(() => {
+                    getMessages()
+                })
+                .then(() => setReplyMessage(''))
+                .catch((error) => {
+                    console.log(error)
+                    setMessage('Sending message failed')
+                    setOpenError(true)
+                })
+
         }
+       
+    }
 
-        firebaseReplyMessage(loadMessage.docId, messageObject)
-            .catch((error) => {
-                console.log(error)
-                setMessage('Sending message failed')
-                setOpenError(true)
-            })
-
-            setReplyMessage('')
+    const getMessages = () => {
+        firebaseGetUserMessages(user)
+        .then((messages) => {
+            setAllMessages(messages)
+            document.getElementById('messagingPlatform').scrollIntoView();
+        })
+        .catch((error) => {
+            setMessage('Sending message failed')
+            setOpenError(true)
+        })
     }
 
 
@@ -201,21 +190,40 @@ export default function Messages({ history }) {
                     <Grid item xs={3} className={classes.grid}>
                         <Paper className={classes.paper1} elevation={3}>
                             <EmailIcon color='secondary' style={{ fontSize: 50, marginTop: theme.spacing(2) }}/>
+                            
                             <List component="nav" dense aria-label="mailbox folders" style={{ width: '100%'}}>
+                                <Divider style={{padding: 0, marding: 0}}/>
                                 {allMessages.map((message, i) => (
                                     <div key={i}>
-                                        <ListItem button onClick={() => handleLoadMessage(message)}>
+                                        <ListItem
+                                            className={(message.messages[message.messages.length-1].sender !== user.type && message.status === 'new') ? classes.new : null}
+                                            button 
+                                            onClick={() => {
+                                                setIndex(i)
+                                                setLoadMessage(message)
+                                                firebaseSetMessageAsRead(message.docId)
+                                                    .then(() => getMessages())
+                                                    .catch((error) => {
+                                                        setMessage('Sending message failed')
+                                                        setOpenError(true)
+                                                    })
+
+                                                setTimeout(() => {
+                                                    document.getElementById('messagingPlatform').scrollIntoView('smooth');
+                                                }, 0)
+                                            }}
+                                        >
                                             <ListItemAvatar >
-                                                <Avatar src={message.otherUser.avatar}/>
+                                                <Avatar src={message.otherUser.avatar} className={classes.avatar}/>
                                             </ListItemAvatar>
                                             <ListItemText 
                                             primary={
-                                                <Typography variant='subtitle2' color='primary'>{message.otherUser.firstName} {message.otherUser.lastName}</Typography>
+                                                <Typography variant='subtitle2' color='primary'>{message.title}</Typography>
                                             } 
                                             secondary={
                                                 <>
-                                                <Typography variant='caption' style={{display: 'block'}}>{message.title}</Typography>
-                                                <Typography variant='caption' style={{display: 'block'}}>{message.jobPostTime}</Typography>
+                                                    <Typography variant='caption' style={{display: 'block'}}>{message.otherUser.firstName} {message.otherUser.lastName}</Typography>
+                                                    <Typography variant='caption' style={{display: 'block'}}>{message.jobPostTime}</Typography>
                                                 </>
                                                 
                                             }/>
@@ -228,6 +236,7 @@ export default function Messages({ history }) {
                     </Grid>
                     <Grid item xs={9} className={classes.grid}>
                         <Paper className={classes.paper2} elevation={3}>
+                       
                             {loadMessage
                                 ? <>
                                     {loadMessage.messages.map((item, j) => (
@@ -237,10 +246,12 @@ export default function Messages({ history }) {
                                         </div>
                                     ))}
                                     </>
-                                
-                                : null
+                                : 
+                                    <div className={classes.select}>
+                                        <Typography>Select an item to read</Typography>
+                                    </div>
                             }
-                           
+                            <div id='messagingPlatform'></div>
                         </Paper>
                         <Paper className={classes.paper3} elevation={3}>
                             <TextField
@@ -273,6 +284,203 @@ export default function Messages({ history }) {
             );
         }
     }
-
-   
 }
+
+
+
+
+    //let unsubscribe
+
+        // if (user) {
+        //     if (user.type === 'client') {
+        //         unsubscribe = firestore.collection('messages').where( 'clientId' ,'==', auth.currentUser.uid)
+        //             .onSnapshot((snapshot) => {
+        //                 setAllMessages([])
+        //                 snapshot.forEach((info) => {
+        //                     let messageHolder = info.data()
+        //                     firebaseGetUserInfo(messageHolder.workerId)
+        //                         .then((otherUser) => {
+        //                             messageHolder['otherUser'] = otherUser
+        //                             messageHolder['jobPostTime'] = moment(messageHolder.jobPostTime).format('MMMM Do YYYY, h:mm a')
+        //                             messageHolder['docId'] = info.id
+        //                             setAllMessages((prevState) => [messageHolder, ...prevState])
+        //                             if(!loadMessage){
+        //                                 setLoadMessage(messageHolder)
+        //                             }
+        //                         })
+        //                         .catch((error) => {
+        //                             setMessage('Sending message failed')
+        //                             setOpenError(true)
+        //                         })
+        //                 })
+        //             })
+
+        //     } else if ((user.type === 'worker')) {
+        //         unsubscribe = firestore.collection('messages').where( 'workerId' ,'==', auth.currentUser.uid)
+        //             .onSnapshot((snapshot) => {
+        //                 setAllMessages([])
+                        
+        //                 snapshot.forEach((info) => {
+        //                     let messageHolder = info.data()
+        //                     firebaseGetUserInfo(messageHolder.clientId)
+        //                         .then((otherUser) => {
+        //                             messageHolder['otherUser'] = otherUser
+        //                             messageHolder['jobPostTime'] = moment(messageHolder.jobPostTime).format('MMMM Do YYYY, h:mm a')
+        //                             messageHolder['docId'] = info.id
+        //                             setAllMessages((prevState) => [messageHolder, ...prevState])
+        //                             // console.log(loadMessage)
+        //                             // if(!loadMessage){
+        //                             //     setLoadMessage(messageHolder)
+        //                             // }
+        //                         })
+        //                         .catch((error) => {
+        //                             setMessage('Sending message failed')
+        //                             setOpenError(true)
+        //                         })
+        //                 })
+
+        //                 // snapshot.docChanges().forEach(function(change) {
+        //                 //     if (change.type === "added") {
+        //                 //         console.log("", change.doc.data());
+        //                 //     }
+        //                 //     if (change.type === "modified") {
+        //                 //         console.log("Modified city: ", change.doc.data());
+        //                 //     }
+        //                 //     if (change.type === "removed") {
+        //                 //         console.log("Removed city: ", change.doc.data());
+        //                 //     }
+        //                 // });
+
+        //             })
+        //     }
+        // }
+
+        // return () => {
+        //     if (unsubscribe) {
+        //         unsubscribe()
+        //     }
+        // };
+
+
+        // if (user){
+
+        //     let queryId = ''
+
+        //     if (user.type === 'client') {
+        //         queryId = 'clientId'
+        //     } else if ((user.type === 'worker')) {
+        //         queryId = 'workerId'
+        //     }
+
+        //     if (activateSubscribe) {
+        //         unsubscribe = firestore.collection('messages').where( queryId ,'==', auth.currentUser.uid)
+        //             .onSnapshot((snapshot) => {
+        //                 snapshot.docChanges().forEach((change) => {
+        //                     if (change.type === "added") {
+        //                         console.log("add", change.doc.data());
+        //                     }
+        //                     if (change.type === "modified") {
+        //                         console.log("modified", change.doc.data())
+        //                         const modifiedMessage = change.doc.data()
+        //                         // const originalMessage = allMessages.filter((msg) => msg.jobId === modifiedMessage.jobId).messages = modifiedMessage.messages
+        //                         // const restMessages = allMessages.filter((msg) => msg.jobId !== modifiedMessage.jobId)
+        //                         // setAllMessages([...originalMessage, ...restMessages])
+
+
+        //                         // const newAllMessages = allMessages.map((msg, i) => {
+        //                         //     if (msg.jobId === modifiedMessage.jobId){
+        //                         //         msg.messages = modifiedMessage.messages
+        //                         //     }
+        //                         //         return msg
+        //                         // })
+
+        //                         // setAllMessages(newAllMessages)
+        //                         // console.log(newAllMessages)
+        //                         // console.log(loadMessageIndex)
+        //                         // setLoadMessage(newAllMessages[loadMessageIndex], loadMessageIndex)
+                                
+        //                         setActivateSubscribe(false)
+
+        //                     }
+        //                     if (change.type === "removed") {
+        //                         console.log("Remove: ", change.doc.data());
+        //                     }
+        //                 });
+        //             })
+        //     } else {
+        //         firebaseGetUserMessages(user)
+        //             .then((messages) => {
+        //                 console.log('in get user')
+        //                 setAllMessages(messages)
+        //                 handleLoadMessage(messages[loadMessageIndex], loadMessageIndex)
+        //             })
+        //             .then(() => setActivateSubscribe(true))
+        //             .catch((error) => {
+        //                 setMessage('Sending message failed')
+        //                 setOpenError(true)
+        //             })
+        //     }
+
+        //     return () => {
+        //         if (unsubscribe) {
+        //             unsubscribe()
+        //         }
+        //     };
+
+
+
+            // unsubscribe = firestore.collection('messages').where( queryId ,'==', auth.currentUser.uid)
+            //     .onSnapshot((snapshot) => {
+            //         snapshot.docChanges().forEach((change) => {
+                        
+            //             if (change.type === "added") {
+                            
+            //                 console.log("add", change.doc.data());
+                            
+            //                 let messageHolder = change.doc.data()
+
+            //                 firebaseGetUserInfo(messageHolder.clientId)
+            //                     .then((otherUser) => {
+            //                         messageHolder['otherUser'] = otherUser
+            //                         messageHolder['jobPostTime'] = moment(messageHolder.jobPostTime).format('MMMM Do YYYY, h:mm a')
+            //                         messageHolder['docId'] = change.doc.id
+            //                         setAllMessages((prevState) => [messageHolder, ...prevState])
+            //                     })
+            //                     .catch((error) => {
+            //                         setMessage('Sending message failed')
+            //                         setOpenError(true)
+            //                     })
+
+            //             }
+            //             if (change.type === "modified") {
+            //                 console.log("modified", change.doc.data())
+            //                 const modifiedMessage = change.doc.data()
+
+            //                 // const originalMessage = allMessages.filter((msg) => msg.jobId === modifiedMessage.jobId).messages = modifiedMessage.messages
+            //                 // const restMessages = allMessages.filter((msg) => msg.jobId !== modifiedMessage.jobId)
+            //                 // setAllMessages([...originalMessage, ...restMessages])
+
+            //                 handleModifiedMessage(modifiedMessage)
+
+            //                 // console.log(allMessages)
+
+            //                 // const newAllMessages = allMessages.map((msg, i) => {
+            //                 //     if (msg.jobId === modifiedMessage.jobId){
+            //                 //         msg.messages = modifiedMessage.messages
+            //                 //     }
+            //                 //         return msg
+            //                 // })
+
+            //                 // setAllMessages(newAllMessages)
+            //                 // console.log(newAllMessages)
+            //                 // console.log(loadMessageIndex)
+            //                 // setLoadMessage(newAllMessages[loadMessageIndex], loadMessageIndex)
+
+            //             }
+            //             if (change.type === "removed") {
+            //                 console.log("Remove: ", change.doc.data());
+            //             }
+            //         });
+            //     })
+          
+       // }
