@@ -250,6 +250,7 @@ export default function Messages({ history }) {
                     </Grid>
                     <Grid item xs={9} className={classes.grid}>
                         <Paper className={classes.paper2} elevation={3}>
+                            
                        
                             {allMessages[index]
                                 ? <>
