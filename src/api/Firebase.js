@@ -29,6 +29,31 @@ export const firestore = firebase.firestore()
 export const storage = firebase.storage()
 export const messaging = firebase.messaging()
 
+export const firebaseGetToken = () => {
+  
+  Notification.requestPermission()
+    .then((permission) => {
+      console.log(permission)
+
+      messaging.getToken({vapidKey:'BMfUY_D1iYZp0oJHFjTfkosgBzBD6qPl8N5pr1ugMpoAoxcB770zvG2LjadkiEOzdDYtB3yAjouF-kVVUfdkqEA'})
+      .then((token) => {
+       
+        console.log(token)
+
+        // messaging.onBackgroundMessage(function(payload) {
+        //   console.log('[firebase-messaging-sw.js] Received background message ', payload);
+      
+        // });
+        
+      })
+      .catch((error) => console.log(error.message))
+
+    })
+    .catch((error) => console.log(error.message))
+ 
+}
+
+
 export const firebaseRecaptchaGenerator = () => {
   window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container')
   window.recaptchaVerifier.render()
@@ -195,7 +220,7 @@ export const firebaseGetTimetable = (userId) => {
     firestore.collection('users').doc(userId).get()
     .then((info) => {
       const timetable = info.data().timetable
-      console.log(timetable)
+      //console.log(timetable)
       resolve(timetable)
     })
     .catch(error => reject(error.message))
@@ -288,7 +313,9 @@ export const firebaseReplyMessage = (id, message) => {
     firestore.collection('messages').doc(id).get()
       .then((info) => {
         let data = info.data()
+        data.status = 'new'
         data.messages.push(message)
+        console.log(data)
         firestore.collection('messages').doc(id).set(data)
           .then(() => resolve())
           .catch(error => reject(error.message))

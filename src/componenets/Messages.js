@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext} from 'react';
-import { Button, Typography, Paper, FormLabel, TextField, Snackbar, Grid, Avatar, ListItemAvatar,
+import { Button, Typography, Paper, FormLabel, TextField, Snackbar, Grid, Avatar, ListItemAvatar, ListItemIcon, 
     Checkbox, Link, Box, List, ListItem, Divider, ListItemText, IconButton} from '@material-ui/core'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import Alert from '@material-ui/lab/Alert';
@@ -10,6 +10,7 @@ import Registration from './Registration'
 import EmailIcon from '@material-ui/icons/Email'
 import SendIcon from '@material-ui/icons/Send'
 import moment from 'moment'
+import FolderIcon from '@material-ui/icons/Folder';
 
 export default function Messages({ history }) {
     
@@ -20,20 +21,25 @@ export default function Messages({ history }) {
     const [loadMessage, setLoadMessage] = useState(null)
     const [index, setIndex] = useState(0)
     const [replyMessage, setReplyMessage] = useState('')
+    
     const theme = useTheme()
-    const { user, messagesBadge, setMessageBadge} = useContext(UserContext)
+    const { user, messages, removeMessageBadge, setRemoveMessageBadge} = useContext(UserContext)
 
 
     useEffect(() => {
 
-        getMessages()
-        setMessageBadge(true)
+        console.log(messages)
+        setAllMessages(messages)
+
+        //getMessages()
+        setRemoveMessageBadge(true)
         
         return () => {
-            setMessageBadge(true)
+            //setRemoveMessageBadge(true)
+            //setAllMessages([])
         }
 
-    }, [messagesBadge])
+    }, [messages, removeMessageBadge])
    
     const useStyles = makeStyles(() => ({
         root: {
@@ -103,7 +109,13 @@ export default function Messages({ history }) {
             borderRadius: 20,
         }, 
         new: {
-            background: theme.palette.secondary.light
+            background: '#f0f0f0'
+        },
+        list: {
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
         }
 
     }))
@@ -166,15 +178,16 @@ export default function Messages({ history }) {
     }
 
     const getMessages = () => {
-        firebaseGetUserMessages(user)
-        .then((messages) => {
-            setAllMessages(messages)
-            document.getElementById('messagingPlatform').scrollIntoView();
-        })
-        .catch((error) => {
-            setMessage('Sending message failed')
-            setOpenError(true)
-        })
+        
+        // firebaseGetUserMessages(user)
+        // .then((messages) => {
+        //     setAllMessages(messages)
+        //     document.getElementById('messagingPlatform').scrollIntoView();
+        // })
+        // .catch((error) => {
+        //     setMessage('Sending message failed')
+        //     setOpenError(true)
+        // })
     }
 
 
@@ -228,6 +241,7 @@ export default function Messages({ history }) {
                                                 
                                             }/>
                                         </ListItem>
+                                       
                                         <Divider style={{padding: 0, marding: 0}}/>
                                     </div>
                                 ))}
@@ -237,9 +251,9 @@ export default function Messages({ history }) {
                     <Grid item xs={9} className={classes.grid}>
                         <Paper className={classes.paper2} elevation={3}>
                        
-                            {loadMessage
+                            {allMessages[index]
                                 ? <>
-                                    {loadMessage.messages.map((item, j) => (
+                                    {allMessages[index].messages.map((item, j) => (
                                         <div key={j} className={item.sender === user.type ? classes.me : classes.otherUser}>
                                             <Typography variant='caption' className={item.sender === user.type ? classes.meTypography : classes.otherUserTypography}>{item.body}</Typography>
                                             <Typography variant='caption' color='textSecondary' style={{ display: 'block', paddingTop: theme.spacing(2)}}>{moment(item.time).format('MMMM Do YYYY, h:mm a')}</Typography>

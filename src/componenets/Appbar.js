@@ -11,11 +11,11 @@ import { firebaseLogout } from '../api/Firebase'
 export function Appbar({ history, location}) {
     
     const theme = useTheme()
-    const { user, addUser, messagesBadge, setMessageBadge} = useContext(UserContext)
+    const { user, addUser, removeMessageBadge, setRemoveMessageBadge} = useContext(UserContext)
     const { darkMode, toggleTheme } = useContext(ThemeContext)
     const [anchorEl, setAnchorEl] = useState(null);
     const isMenuOpen = Boolean(anchorEl);
-    
+    console.log(removeMessageBadge)
     const handleMenu = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -74,11 +74,11 @@ export function Appbar({ history, location}) {
                                 size='small' 
                                 style={{marginLeft: theme.spacing(2)}} 
                                 onClick={() => {
-                                    setMessageBadge(true)
+                                    setRemoveMessageBadge(true)
                                     history.replace('/messages')
                                 }}
                             >
-                                <Badge  color="secondary" variant="dot" invisible={messagesBadge || location.pathname === '/messages'}>Messages</Badge>
+                                <Badge  color="secondary" variant="dot" invisible={removeMessageBadge || location.pathname === '/messages'}>Messages</Badge>
                             </Button>
                         </div>
                     )
