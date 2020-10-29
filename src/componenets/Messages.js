@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useContext} from 'react';
-import { Button, Typography, Paper, FormLabel, TextField, Snackbar, Grid, Avatar, ListItemAvatar, ListItemIcon, 
-    Checkbox, Link, Box, List, ListItem, Divider, ListItemText, IconButton} from '@material-ui/core'
+import { Button, Typography, Paper, TextField, Snackbar, Grid, Avatar, ListItemAvatar, ListItemSecondaryAction, 
+     List, ListItem, Divider, ListItemText, IconButton, Tooltip, Modal} from '@material-ui/core'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import Alert from '@material-ui/lab/Alert';
 import { UserContext } from '../context/UserContext'
-import { firebaseReplyMessage, firebaseGetUserMessages, firestore, auth, firebaseSetMessageAsRead} from '../api/Firebase'
+import { firebaseReplyMessage, firebaseGetUserMessages, firestore, auth, firebaseGetJob, firebaseSetMessageAsRead} from '../api/Firebase'
 import { Redirect } from "react-router-dom"
 import Registration from './Registration'
 import EmailIcon from '@material-ui/icons/Email'
 import SendIcon from '@material-ui/icons/Send'
 import moment from 'moment'
-import FolderIcon from '@material-ui/icons/Folder';
+import TouchAppIcon from '@material-ui/icons/TouchApp';
+import ApplyJob from './ApplyJob'
 
 export default function Messages({ history }) {
     
@@ -18,9 +19,10 @@ export default function Messages({ history }) {
     const [openSuccess, setOpenSuccess] = useState(false)
     const [message, setMessage] = useState('')
     const [allMessages, setAllMessages] = useState([])
-    const [loadMessage, setLoadMessage] = useState(null)
-    const [index, setIndex] = useState(0)
+    const [index, setIndex] = useState(null)
     const [replyMessage, setReplyMessage] = useState('')
+    const [job, setJob] = useState(null)
+    const [openApplyModal, setOpenApplyModal] = useState(false)
     
     const theme = useTheme()
     const { user, messages, removeMessageBadge, setRemoveMessageBadge} = useContext(UserContext)
@@ -98,6 +100,7 @@ export default function Messages({ history }) {
              background: theme.palette.primary.light,
              padding: theme.spacing(2),
              borderRadius: 20,
+             borderBottomRightRadius: 0
         },
         otherUser: {
             padding: theme.spacing(2),
@@ -107,6 +110,7 @@ export default function Messages({ history }) {
             background: theme.palette.secondary.light,
             padding: theme.spacing(2),
             borderRadius: 20,
+            borderBottomLeftRadius: 0
         }, 
         new: {
             background: '#f0f0f0'
@@ -116,7 +120,29 @@ export default function Messages({ history }) {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
-        }
+        }, 
+        modal: {
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%'
+        }, 
+        modalPaper: {
+            width: '60%', 
+            height: '80%', 
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            padding: theme.spacing(2)
+        }, 
+        particularDaysSelect: {
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+        },
 
     }))
 
@@ -138,19 +164,6 @@ export default function Messages({ history }) {
         setMessage('')
     }
 
-    const handleLoadMessage = (i) => {
-
-        
-        // let chatHistory = document.getElementById('messagingPlatform')
-        // chatHistory.scrollTop = chatHistory.scrollHeight
-
-        setIndex(i)
-        //document.getElementById('messagingPlatform').scrollIntoView();
-
-        //let chatHistory = document.getElementById('messagingPlatform')
-        //chatHistory.scrollTop = chatHistory.scrollHeight
-
-    }
 
     const handleSendMessage = () => {
 
@@ -190,6 +203,23 @@ export default function Messages({ history }) {
         // })
     }
 
+    const handleApplyForJob = (id) => {
+        firebaseGetJob(id)
+            .then((job) => {
+                console.log(job)
+                setJob(job)
+            })
+            .then(() => setOpenApplyModal(true))
+            .catch((error) => {
+                setMessage('Failed to get job. It might have been deleted')
+                setOpenError(true)
+            })
+    }
+
+    const handleCloseApplyModal = () => {
+        setOpenApplyModal(false)
+        setJob(null)
+    }
 
     if (!user) {
         return <Redirect to={'/signin'} />
@@ -200,7 +230,7 @@ export default function Messages({ history }) {
             return (
                 <>
                 <Grid container className={classes.root} spacing={0}>
-                    <Grid item xs={3} className={classes.grid}>
+                    <Grid item xs={4} className={classes.grid}>
                         <Paper className={classes.paper1} elevation={3}>
                             <EmailIcon color='secondary' style={{ fontSize: 50, marginTop: theme.spacing(2) }}/>
                             
@@ -213,7 +243,6 @@ export default function Messages({ history }) {
                                             button 
                                             onClick={() => {
                                                 setIndex(i)
-                                                setLoadMessage(message)
                                                 firebaseSetMessageAsRead(message.docId)
                                                     .then(() => getMessages())
                                                     .catch((error) => {
@@ -240,17 +269,36 @@ export default function Messages({ history }) {
                                                 </>
                                                 
                                             }/>
+                                            {user.type === 'worker'
+                                            ?  <ListItemSecondaryAction>
+                                                    <Tooltip title="Apply" aria-label="add">
+                                                        <IconButton edge="end" aria-label="apply" onClick={() => handleApplyForJob(message.jobId)}>
+                                                            <TouchAppIcon color='secondary'/>
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </ListItemSecondaryAction>
+                                            : null
+                                            }
                                         </ListItem>
-                                       
                                         <Divider style={{padding: 0, marding: 0}}/>
+                                        <Modal
+                                            open={openApplyModal}
+                                            onClose={handleCloseApplyModal}
+                                            aria-labelledby="simple-modal-title"
+                                            aria-describedby="simple-modal-description"
+                                        >
+                                            <div style={{width: '100%', height:'100%'}}>
+                                                <ApplyJob job={job}/>
+                                            </div>
+                                           
+                                        </Modal>
                                     </div>
                                 ))}
                             </List>
                         </Paper>
                     </Grid>
-                    <Grid item xs={9} className={classes.grid}>
+                    <Grid item xs={8} className={classes.grid}>
                         <Paper className={classes.paper2} elevation={3}>
-                            
                        
                             {allMessages[index]
                                 ? <>
@@ -284,7 +332,6 @@ export default function Messages({ history }) {
                         </Paper>
                     </Grid>
             </Grid>
-   
              <Snackbar open={openError} autoHideDuration={6000} onClose={handleErrorClose}>
              <Alert onClose={handleErrorClose} severity='error'>
                  {message}

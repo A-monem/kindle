@@ -281,6 +281,18 @@ export const firebasePostJob = (job) => {
   })
 }
 
+export const firebaseGetJob = (id) => {
+  return new Promise((resolve, reject) => {
+
+      firestore.collection('jobs').doc(id).get()
+        .then((doc) => {
+           resolve(doc.data())
+        })
+        .catch(error => reject(error.message))
+
+  })
+}
+
 export const firebaseDeleteJob = (postTime) => {
   return new Promise((resolve, reject) => {
   

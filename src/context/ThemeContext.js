@@ -1,6 +1,6 @@
 import React, {Component, createContext} from 'react'
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles'
-import { grey, orange, blueGrey, blue, purple, red, green, deepOrange, yellow, teal, amber} from '@material-ui/core/colors'
+import { grey, orange, blueGrey, blue, purple, red, green, deepOrange, yellow, teal, amber, indigo} from '@material-ui/core/colors'
 
 export const ThemeContext = createContext()
 
@@ -18,7 +18,7 @@ export default class ThemeContextProvider extends Component{
     render() {
         const theme = createMuiTheme({
             palette: {
-              primary: blue,
+              primary: indigo,
               secondary: amber,
               type: this.state.darkMode ? 'dark' : 'light'
             },
