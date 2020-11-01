@@ -22,10 +22,11 @@ function Copyright() {
 
 export default function Signin({ history }) {
 
-    const [email, setEmail] = useState('aamnafea@hotmail.com')
+    const [email, setEmail] = useState('abdulmonemamin@hotmail.com')
     const [password, setPassword] = useState('Banana101')
     const [open, setOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState('')
+    const [disable, setDisable] = useState(false)
 
     useEffect(() => {
         // console.log(auth.currentUser)
@@ -76,6 +77,8 @@ export default function Signin({ history }) {
     const classes = useStyles()
 
     const login = () => {
+        setDisable(true)
+
         firebaseLogin(email, password)
             .then((user) => {
                 addUser(user)
@@ -83,6 +86,7 @@ export default function Signin({ history }) {
                 history.push('/dashboard')
             })
             .catch((error) => {
+                setDisable(false)
                 setErrorMessage(error)
                 setOpen(true)
             })
@@ -140,6 +144,7 @@ export default function Signin({ history }) {
                             color="primary"
                             className={classes.submit}
                             onClick={() => login()}
+                            disabled={disable}
                         >
                             Sign In
                         </Button>

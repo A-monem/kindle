@@ -6,7 +6,7 @@ import { ThemeContext } from '../context/ThemeContext'
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import DarkModeToggle from "react-dark-mode-toggle";
 import { withRouter } from "react-router";
-import { firebaseLogout } from '../api/Firebase'
+import { firebaseLogout, auth } from '../api/Firebase'
 
 export function Appbar({ history, location}) {
     
@@ -15,7 +15,6 @@ export function Appbar({ history, location}) {
     const { darkMode, toggleTheme } = useContext(ThemeContext)
     const [anchorEl, setAnchorEl] = useState(null);
     const isMenuOpen = Boolean(anchorEl);
-    console.log(removeMessageBadge)
     const handleMenu = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -34,6 +33,11 @@ export function Appbar({ history, location}) {
         .catch(function(error) {
             console.log(error)
         });
+    }
+
+    const handleProfile = () => {
+        history.push(`/profile/${auth.currentUser.uid}`)
+        setAnchorEl(null)
     }
     
     const useStyles = makeStyles(() => ({
@@ -117,18 +121,18 @@ export function Appbar({ history, location}) {
                             open={isMenuOpen}
                             onClose={handleClose}
                         >
-                            <MenuItem onClick={handleClose}>Profile</MenuItem>
+                            <MenuItem onClick={handleProfile}>Profile</MenuItem>
                             <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
                         </Menu>
                     </>
                     :
                     <>
-                        <Button variant="outlined" size="small" className={classes.margin} 
+                        <Button variant="outlined" size="small"  color='secondary' className={classes.margin} 
                         style={{textTransform: "none"}}
                         onClick={() => history.push('/signin')}>
                             Sign in
                         </Button>
-                        <Button variant="outlined" size="small" 
+                        <Button variant="outlined" size="small"  color='secondary'
                             className={classes.margin} style={{textTransform: "none"}}
                             onClick={() => history.push('/signup')}>
                             Sign up

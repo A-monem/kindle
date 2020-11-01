@@ -312,7 +312,7 @@ export default function WorkerRegistrationStepTwo({ activeStep, setActiveStep })
         <div className={classes.root}>
              <form className={classes.form} onSubmit={e => handleNext(e)}>
                 <div className={classes.time}>
-                    <Typography variant='subtitle1' color='primary'>1) How much one to one support do you need each week ?</Typography>
+                    <Typography variant='subtitle1' color='primary'>1) How many hours of support can you provide each week ?</Typography>
                     <TextField
                         required
                         fullWidth

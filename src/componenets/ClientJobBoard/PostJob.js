@@ -370,7 +370,7 @@ export default function PostJob({ edit, setEdit, jobToBeEdited }){
                     )
                     : null}
                     <div className={classes.submitButton}>
-                        <Button variant='contained' color='primary' type='submit'>Post</Button>
+                        <Button variant='outlined' color='secondary' type='submit'>Post</Button>
                     </div>
                 
             </form>

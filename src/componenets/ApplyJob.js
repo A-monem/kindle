@@ -11,14 +11,15 @@ import DateFnsUtils from '@date-io/date-fns';
 import { MuiPickersUtilsProvider, KeyboardTimePicker, KeyboardDatePicker } from '@material-ui/pickers';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever'
 import moment from 'moment'
+import { firebaseSendOffer, auth} from '../api/Firebase'
 
 
-export default function ApplyJob({ job }) {
+export default function ApplyJob({ job, setOpenApplyModal }) {
 
     const [openError, setOpenError] = useState(false)
     const [openSuccess, setOpenSuccess] = useState(false)
     const [message, setMessage] = useState('')
-    const [rate, setRate] = useState(0)
+    const [rate, setRate] = useState('')
     const [particularSupportTime, setParticularSupportTime] = useState([])
     const [daySelected, setDaySelected] = useState('')
     const [dateSelected, setDateSelected] = useState(new Date())
@@ -53,7 +54,7 @@ export default function ApplyJob({ job }) {
             height: '80%',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'flex-start',
+            justifyContent: 'space-evenly',
             alignItems: 'center',
             padding: theme.spacing(2)
         },
@@ -73,6 +74,13 @@ export default function ApplyJob({ job }) {
             width: '100%', 
             marginTop: theme.spacing(2)
         },
+        buttons: {
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-evenly',
+            alignItems: 'center',
+            //width: '100%', 
+        }
 
     }))
 
@@ -102,8 +110,8 @@ export default function ApplyJob({ job }) {
             
             arr.push({
                 day: daySelected,
-                from: fromTime,
-                to: toTime
+                from: fromTime.getTime(),
+                to: toTime.getTime()
             })
 
             setParticularSupportTime(arr)
@@ -114,11 +122,11 @@ export default function ApplyJob({ job }) {
         } else if (dateSelected && fromTime && toTime)   {
             
             const arr = [...particularSupportTime]
-            
+            console.log(dateSelected.getTime())
             arr.push({
-                day: dateSelected,
-                from: fromTime,
-                to: toTime
+                day: dateSelected.getTime(),
+                from: fromTime.getTime(),
+                to: toTime.getTime()
             })
 
             setParticularSupportTime(arr)
@@ -144,6 +152,32 @@ export default function ApplyJob({ job }) {
         setParticularSupportTime(arr)
     }
 
+    const handleApply = () => {
+
+        if (rate && fromTime && toTime){
+            if (daySelected || dateSelected){
+                const offer = {
+                    name: `${user.firstName} ${user.lastName}`,
+                    avatar: user.avatar,
+                    rate, 
+                    particularSupportTime,
+                    status: 'Pending'
+                }
+
+                firebaseSendOffer(job.id, offer)
+                    .then((job) => {
+                        setMessage('Offer sent')
+                        setOpenSuccess(true)
+                        setOpenApplyModal(false)
+                    })
+                    .catch((error) => {
+                        setMessage(error)
+                        setOpenError(true)
+                    })
+
+            }
+        }
+    }
 
     return (
         <>
@@ -210,7 +244,7 @@ export default function ApplyJob({ job }) {
                                         id="time-picker"
                                         label="From"
                                         style={{ width: theme.spacing(25) }}
-                                        value={toTime}
+                                        value={fromTime}
                                         onChange={date => setFromTime(date)}
                                         KeyboardButtonProps={{
                                             'aria-label': 'change time',
@@ -267,6 +301,25 @@ export default function ApplyJob({ job }) {
                         </>
                         : null
                     }
+                    <div className={classes.buttons}>
+                        <Button 
+                            variant='outlined' 
+                            color='secondary'
+                            size='small'
+                            onClick={handleApply}
+                            style={{marginRight: theme.spacing(2)}}
+                        >
+                            Apply
+                        </Button>
+                        <Button 
+                            variant='outlined' 
+                            color='secondary'
+                            size='small'
+                            onClick={() => setOpenApplyModal(false)} 
+                        >
+                            Cancel
+                        </Button>
+                    </div>
                 </Paper>
             </div>
             <Snackbar open={openError} autoHideDuration={6000} onClose={handleErrorClose}>

@@ -34,7 +34,7 @@ export default function Timetable({ history }){
         root: {
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'flex-start',
+            justifyContent: timetable ? 'flex-start' : 'center',
             alignItems: 'center',
         },
     }))
@@ -143,7 +143,7 @@ export default function Timetable({ history }){
                         </Scheduler>
                     </Paper>
                 )
-                : <CircularProgress />
+                : <CircularProgress color='secondary'/>
             }   
             
         </div>

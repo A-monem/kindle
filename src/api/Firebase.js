@@ -141,9 +141,11 @@ export const firebaseAddUserPersonalInfo = (profilePictureUrl, languageList, add
   return new Promise((resolve, reject) => {
     firestore.collection('users').doc(auth.currentUser.uid).get()
       .then((info) => {
-        console.log({profilePictureUrl}, {languageList}, {address}, {mobileNumber}, {emergency}, {gender}, {birthday}, {birthCountry}, {bio})
+        
         let user = info.data()
-        console.log(user)
+        const id = randomId(len, pattern)
+        
+        user['membership'] = Date.now()
         user['avatar'] = profilePictureUrl
         user['languages'] = languageList
         user['address'] = address
@@ -184,7 +186,7 @@ export const firebaseGetUserInfo = (id) => {
       .then((info) => {
         resolve(info.data())
       })
-      .catch(error => reject(error.message))
+      .catch(error => console.log(error.message))
   })
 }
 
@@ -264,6 +266,7 @@ export const firebasePostJob = (job) => {
       const id = randomId(len, pattern)
       
       job['jobId'] = id
+      job['offers'] = []
 
       firestore.collection('jobs').doc(id).set(job)
         .then(() => {
@@ -307,6 +310,51 @@ export const firebaseDeleteJob = (postTime) => {
 
   })
 }
+
+export const firebaseSendOffer = (jobId, offer) => {
+  return new Promise((resolve, reject) => {
+      firestore.collection('jobs').doc(jobId).get()
+        .then((info) => {
+          let job = info.data()
+          job['offers'].push(offer)
+          firestore.collection('jobs').doc(jobId).set(job)
+            .then(() => resolve(job))
+            .catch(error => reject(error.message))
+          })
+        .catch(error => reject(error.message))
+  })
+}
+
+export const firebaseAcceptOffer = (jobId, index) => {
+  return new Promise((resolve, reject) => {
+      firestore.collection('jobs').doc(jobId).get()
+        .then((info) => {
+          let job = info.data()
+          
+          job['status'] = 'Closed'
+          
+          let x = []
+
+          job['offers'].forEach((offer, i) => {
+              if (i === index){
+                offer.status = 'Accepted'
+              } else {
+                offer.status = 'Rejected'
+              }
+
+              x.push(offer)
+          })
+
+          job['offers'] = x
+          console.log(job)
+          firestore.collection('jobs').doc(jobId).set(job)
+            .then(() => resolve(job))
+            .catch(error => reject(error.message))
+          })
+        .catch(error => reject(error.message))
+  })
+}
+
 
 export const firebaseSendMessage = (message) => {
   return new Promise((resolve, reject) => {

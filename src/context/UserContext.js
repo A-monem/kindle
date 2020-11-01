@@ -97,11 +97,10 @@ export default class UserContextProvider extends Component{
 
                         if (change.type === "added") {
 
-                            console.log("add", change.doc.data());
                             let messageHolder = change.doc.data()
 
                             if (this.state.removeMessageBadge && messageHolder.status === 'new' && messageHolder.messages[messageHolder.messages.length-1].sender !== user.type){
-                                console.log('i am in')
+                               
                                 this.setRemoveMessageBadge(false)
                             }
 
@@ -126,12 +125,11 @@ export default class UserContextProvider extends Component{
                                 .catch(error => console.log(error.message))
                         }
                         if (change.type === "modified") {
-                            console.log("modified", change.doc.data())
+                            
                             let messageHolder = change.doc.data()
                             
                             this.setState((prevState) =>{
                                 let x = [...prevState.messages]
-                                console.log(messageHolder)
                                 
                                 const y = x.filter((message) => message.docId === change.doc.id).map((item) => ({
                                     ...item,
@@ -140,8 +138,6 @@ export default class UserContextProvider extends Component{
                                 }))
 
                                 const index = x.findIndex((message) => message.docId === change.doc.id)
-
-                                console.log(index)
 
                                 x[index] = y[0]
                                

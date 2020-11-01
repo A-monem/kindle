@@ -10,6 +10,7 @@ import JobBoard from './componenets/JobBoard'
 import Messages from './componenets/Messages'
 import Terms from './componenets/Terms'
 import Privacy from './componenets/Privacy'
+import Profile from './componenets/Profile'
 import CombinedContextProvider from './context/CombinedContext'
 import { CssBaseline } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
@@ -46,6 +47,7 @@ function App() {
               <Route path='/messages' exact component={Messages} />
               <Route path='/terms' exact component={Terms} />
               <Route path='/privacy' exact component={Privacy} />
+              <Route path='/profile/:id' exact component={Profile} />
               <Route component={Error} />
             </Switch>
           </div>

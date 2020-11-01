@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext} from 'react';
-import { Button, Typography, Paper, TextField, Snackbar, Grid, Avatar, ListItemAvatar, ListItemSecondaryAction, 
+import { Typography, Paper, TextField, Snackbar, Grid, Avatar, ListItemAvatar, ListItemSecondaryAction, 
      List, ListItem, Divider, ListItemText, IconButton, Tooltip, Modal} from '@material-ui/core'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import Alert from '@material-ui/lab/Alert';
@@ -176,9 +176,6 @@ export default function Messages({ history }) {
             }
 
             firebaseReplyMessage(allMessages[index].docId, messageObject)
-                .then(() => {
-                    getMessages()
-                })
                 .then(() => setReplyMessage(''))
                 .catch((error) => {
                     console.log(error)
@@ -188,19 +185,6 @@ export default function Messages({ history }) {
 
         }
        
-    }
-
-    const getMessages = () => {
-        
-        // firebaseGetUserMessages(user)
-        // .then((messages) => {
-        //     setAllMessages(messages)
-        //     document.getElementById('messagingPlatform').scrollIntoView();
-        // })
-        // .catch((error) => {
-        //     setMessage('Sending message failed')
-        //     setOpenError(true)
-        // })
     }
 
     const handleApplyForJob = (id) => {
@@ -233,7 +217,6 @@ export default function Messages({ history }) {
                     <Grid item xs={4} className={classes.grid}>
                         <Paper className={classes.paper1} elevation={3}>
                             <EmailIcon color='secondary' style={{ fontSize: 50, marginTop: theme.spacing(2) }}/>
-                            
                             <List component="nav" dense aria-label="mailbox folders" style={{ width: '100%'}}>
                                 <Divider style={{padding: 0, marding: 0}}/>
                                 {allMessages.map((message, i) => (
@@ -244,7 +227,6 @@ export default function Messages({ history }) {
                                             onClick={() => {
                                                 setIndex(i)
                                                 firebaseSetMessageAsRead(message.docId)
-                                                    .then(() => getMessages())
                                                     .catch((error) => {
                                                         setMessage('Sending message failed')
                                                         setOpenError(true)
@@ -288,7 +270,7 @@ export default function Messages({ history }) {
                                             aria-describedby="simple-modal-description"
                                         >
                                             <div style={{width: '100%', height:'100%'}}>
-                                                <ApplyJob job={job}/>
+                                                <ApplyJob job={job} setOpenApplyModal={setOpenApplyModal}/>
                                             </div>
                                            
                                         </Modal>
