@@ -34,7 +34,7 @@ export default function Dashboard({ history }) {
             margin: theme.spacing(10),
             padding: theme.spacing(5),
             width: '80%',
-            Height: '100%'
+            Height: '80%'
         }
     }))
 

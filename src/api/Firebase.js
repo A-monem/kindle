@@ -83,6 +83,10 @@ export const firebaseAddUser = (type, firstName, lastName, email, password, comp
           complete
         })
       })
+      .then(() => firestore.collection('timetables').doc(auth.currentUser.uid).set({
+        Ongoing: [],
+        OnceOff: []
+      }))
       .then(() => {
         auth.currentUser.updateProfile({
           displayName: `${firstName} ${lastName}`
@@ -143,7 +147,6 @@ export const firebaseAddUserPersonalInfo = (profilePictureUrl, languageList, add
       .then((info) => {
         
         let user = info.data()
-        const id = randomId(len, pattern)
         
         user['membership'] = Date.now()
         user['avatar'] = profilePictureUrl
@@ -212,17 +215,12 @@ export const firebaseSetRegistrationComplete = () => {
   })
 }
 
-export const firebaseGetTimetable = (userId) => {
+export const firebaseGetTimetable = () => {
   return new Promise((resolve, reject) => {
-
-    if (!userId) {
-      userId = auth.currentUser.uid
-    }
-
-    firestore.collection('users').doc(userId).get()
+    firestore.collection('timetables').doc(auth.currentUser.uid).get()
     .then((info) => {
-      const timetable = info.data().timetable
-      //console.log(timetable)
+      const timetable = info.data()
+      //once off & ongoing
       resolve(timetable)
     })
     .catch(error => reject(error.message))
@@ -243,20 +241,46 @@ export const firebaseSetTimetable = (timetable) => {
   })
 }
 
-export const firebaseAddEventToTimetable = (event) => {
+export const firebaseAddEventToTimetable = (event, eventType, user) => {
   return new Promise((resolve, reject) => {
-    firestore.collection('users').doc(auth.currentUser.uid).get()
-    .then((info) => {
-      let user = info.data()
-      let timetable = user.timetable
-      //console.log(timetable)
-      timetable.push(event)
-      user['timetable'] = timetable
-      firestore.collection('users').doc(auth.currentUser.uid).set(user)
-        .then(() => resolve(timetable))
-        .catch(error => reject(error.message))
+    
+    let job = {
+      name: event.name,
+      avatar: event.avatar,
+      rate: event.rate,
+      time: []
+    }
+
+    event.particularSupportTime.forEach((supportTime) => {
+      job.time.push({
+        startDate: supportTime.from,
+        endDate: supportTime.to,
+      })
     })
-    .catch(error => reject(error.message))
+
+    console.log(eventType)
+
+    firestore.collection('timetables').doc(auth.currentUser.uid).get()
+      .then((info) => {
+        let timetable = info.data()
+        timetable[eventType].push(job)
+        firestore.collection('timetables').doc(auth.currentUser.uid).set(timetable)
+          .then(() => {
+            firestore.collection('timetables').doc(event.workerId).get()
+              .then((info) => {
+                let timetable = info.data()
+                job.name = `${user.firstName} ${user.lastName}`
+                job.avatar = user.avatar
+                console.log(job)
+                timetable[eventType].push(job)
+                firestore.collection('timetables').doc(event.workerId).set(timetable)
+              })
+              .then(() => resolve())
+              .catch(error => reject(error.message))
+          })
+          .catch(error => reject(error.message))
+      })
+      .catch(error => reject(error.message))
   })
 }
 
@@ -269,17 +293,8 @@ export const firebasePostJob = (job) => {
       job['offers'] = []
 
       firestore.collection('jobs').doc(id).set(job)
-        .then(() => {
-            firestore.collection('jobs').where( 'id' ,'==', auth.currentUser.uid).get()
-              .then((querySnapshot) => {
-                querySnapshot.forEach((doc) => {
-                    console.log(doc.data());
-                    resolve()
-                });
-              })
-              .catch(error => reject(error.message))
-        })
-        .catch(error => reject(error.message))
+        .then(() => resolve())
+        .catch(error => reject(error))
 
   })
 }
@@ -325,7 +340,7 @@ export const firebaseSendOffer = (jobId, offer) => {
   })
 }
 
-export const firebaseAcceptOffer = (jobId, index) => {
+export const firebaseAcceptOffer = (jobId, index, user) => {
   return new Promise((resolve, reject) => {
       firestore.collection('jobs').doc(jobId).get()
         .then((info) => {
@@ -338,15 +353,15 @@ export const firebaseAcceptOffer = (jobId, index) => {
           job['offers'].forEach((offer, i) => {
               if (i === index){
                 offer.status = 'Accepted'
+                firebaseAddEventToTimetable(offer, job.jobType, user)
               } else {
                 offer.status = 'Rejected'
               }
-
               x.push(offer)
           })
 
           job['offers'] = x
-          console.log(job)
+          
           firestore.collection('jobs').doc(jobId).set(job)
             .then(() => resolve(job))
             .catch(error => reject(error.message))
@@ -358,13 +373,22 @@ export const firebaseAcceptOffer = (jobId, index) => {
 
 export const firebaseSendMessage = (message) => {
   return new Promise((resolve, reject) => {
-    
+
     const id = randomId(len, pattern)
-
-    firestore.collection('messages').doc(id).set(message)
-      .then(() => resolve())
-      .catch(error => reject(error.message))
-
+    console.log(message.jobId)
+    firestore.collection('messages').where("jobId", "==", message.jobId).where("clientId", "==", message.clientId).where("workerId", "==", message.workerId).get()
+      .then((snapshot) => {
+          if (snapshot.docs.length > 0){
+            snapshot.forEach((doc) => {
+              firebaseReplyMessage(doc.id, message.messages[0])
+            })
+          } else {
+            firestore.collection('messages').doc(id).set(message)
+              .then(() => resolve())
+              .catch(error => reject(error))
+          }
+      })
+      .catch(error => reject(error))
   })
 }
 

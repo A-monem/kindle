@@ -71,7 +71,7 @@ export function Appbar({ history, location}) {
                         <div style={{marginLeft: theme.spacing(4), display: 'inline'}}>
                             <Button color="primary" size='small' style={{marginLeft: theme.spacing(2)}} onClick={() => history.replace('/dashboard')}>Dashboard</Button>
                             <Button color="primary" size='small' style={{marginLeft: theme.spacing(2)}} onClick={() => history.replace('/dashboard')}>Search</Button>
-                            <Button color="primary" size='small' style={{marginLeft: theme.spacing(2)}} onClick={() => history.replace('/dashboard')}>Bookings</Button>
+                            <Button color="primary" size='small' style={{marginLeft: theme.spacing(2)}} onClick={() => history.replace('/dashboard')}>Timesheets</Button>
                             <Button color="primary" size='small' style={{marginLeft: theme.spacing(2)}} onClick={() => history.replace('/jobs')}>Job Board</Button>
                             <Button 
                                 color="primary" 
@@ -82,7 +82,7 @@ export function Appbar({ history, location}) {
                                     history.replace('/messages')
                                 }}
                             >
-                                <Badge  color="secondary" variant="dot" invisible={removeMessageBadge || location.pathname === '/messages'}>Messages</Badge>
+                                <Badge color="secondary" variant="dot" invisible={removeMessageBadge || location.pathname === '/messages'}>Messages</Badge>
                             </Button>
                         </div>
                     )

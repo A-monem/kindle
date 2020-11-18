@@ -122,11 +122,13 @@ export default function ApplyJob({ job, setOpenApplyModal }) {
         } else if (dateSelected && fromTime && toTime)   {
             
             const arr = [...particularSupportTime]
-            console.log(dateSelected.getTime())
+
+            console.log(fromTime.setDate(dateSelected.getDate()))
+            
             arr.push({
                 day: dateSelected.getTime(),
-                from: fromTime.getTime(),
-                to: toTime.getTime()
+                from: fromTime.setDate(dateSelected.getDate()),
+                to: toTime.setDate(dateSelected.getDate())
             })
 
             setParticularSupportTime(arr)
@@ -156,22 +158,26 @@ export default function ApplyJob({ job, setOpenApplyModal }) {
 
         if (rate && fromTime && toTime){
             if (daySelected || dateSelected){
+                
                 const offer = {
                     name: `${user.firstName} ${user.lastName}`,
                     avatar: user.avatar,
                     rate, 
                     particularSupportTime,
-                    status: 'Pending'
+                    status: 'Pending', 
+                    workerId: auth.currentUser.uid
                 }
 
-                firebaseSendOffer(job.id, offer)
+                console.log(job)
+
+                firebaseSendOffer(job.jobId, offer)
                     .then((job) => {
                         setMessage('Offer sent')
                         setOpenSuccess(true)
                         setOpenApplyModal(false)
                     })
                     .catch((error) => {
-                        setMessage(error)
+                        setMessage('Error sending offer. Please contact Kindle support')
                         setOpenError(true)
                     })
 

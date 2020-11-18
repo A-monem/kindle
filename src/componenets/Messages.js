@@ -30,7 +30,6 @@ export default function Messages({ history }) {
 
     useEffect(() => {
 
-        console.log(messages)
         setAllMessages(messages)
 
         //getMessages()
@@ -190,7 +189,6 @@ export default function Messages({ history }) {
     const handleApplyForJob = (id) => {
         firebaseGetJob(id)
             .then((job) => {
-                console.log(job)
                 setJob(job)
             })
             .then(() => setOpenApplyModal(true))

@@ -145,7 +145,7 @@ export default function OpenJobs({ setEdit, setJobId }){
             workerId: auth.currentUser.uid, 
             clientId: job.clientId,
             title: job.title,
-            jobId: job.id,
+            jobId: job.jobId,
             jobPostTime: job.postTime,
             status: 'new',
             messages: [{
@@ -154,6 +154,8 @@ export default function OpenJobs({ setEdit, setJobId }){
                 time: Date.now()
             }]
         }
+
+        console.log(messageObject)
 
         firebaseSendMessage(messageObject)
             .catch((error) => {

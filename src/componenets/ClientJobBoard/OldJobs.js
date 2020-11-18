@@ -3,7 +3,7 @@ import { Button, Box, Typography, Card, CardActions, CardContent, Chip, Avatar, 
     List, ListItem, ListItemText, ListItemAvatar, Divider, Table, TableCell, TableContainer, TableBody,
     Paper, TableHead, TableRow } from '@material-ui/core'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
-import { firestore, auth, firebaseDeleteJob, firebaseAcceptOffer} from '../../api/Firebase'
+import { firestore, auth, firebaseDeleteJob, firebaseAcceptOffer, firebaseAddEventToTimetable} from '../../api/Firebase'
 import { UserContext } from '../../context/UserContext'
 import moment from 'moment'
 import DoneOutlineIcon from '@material-ui/icons/DoneOutline';
@@ -14,12 +14,11 @@ export default function OldJobs({ setEdit, setJobToBeEdited }){
     const [showOffers, setShowOffers] = useState({})
 
     useEffect(() => {
-    
+        
         const unsubscribeOldJobs = firestore.collection('jobs').where( 'clientId' ,'==', auth.currentUser.uid)
             .onSnapshot((snapshot) => {
                 let jobHolder = []
                 snapshot.forEach((job) => {
-                    console.log(job.data())
                     jobHolder.push(job.data())
                 })
                 setOldJobs(jobHolder.reverse())
@@ -32,7 +31,7 @@ export default function OldJobs({ setEdit, setJobToBeEdited }){
     }, [])
 
     const theme = useTheme()
-    //const { jobs, addJobs} = useContext(UserContext)
+    const { user } = useContext(UserContext)
 
     const useStyles = makeStyles(() => ({
         root: {
@@ -101,11 +100,7 @@ export default function OldJobs({ setEdit, setJobToBeEdited }){
     }
 
     const handleAcceptOffer = (jobId, index) => {
-        console.log(index)
-        console.log(jobId)
-
-        firebaseAcceptOffer(jobId, index)
-        
+        firebaseAcceptOffer(jobId, index, user)
     }
 
 
@@ -183,7 +178,7 @@ export default function OldJobs({ setEdit, setJobToBeEdited }){
                                                 />
                                                 {job.status === 'Open'
                                                     ? <Tooltip title="Accept offer" aria-label="accept">
-                                                            <IconButton edge="end" aria-label="apply" onClick={() => handleAcceptOffer(job.id, j)} >
+                                                            <IconButton edge="end" aria-label="apply" onClick={() => handleAcceptOffer(job.jobId, j)} >
                                                                 <DoneOutlineIcon color='secondary'/>
                                                             </IconButton>
                                                         </Tooltip>

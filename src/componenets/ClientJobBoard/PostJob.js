@@ -148,11 +148,12 @@ export default function PostJob({ edit, setEdit, jobToBeEdited }){
     const handlePostSubmit = (e) => {
         
         e.preventDefault()
+        console.log(user)
 
         let job = {
             name: `${user.firstName} ${user.lastName}`,
-            avatar: user.profilePictureUrl,
-            ClientId: auth.currentUser.uid,
+            avatar: user.avatar,
+            clientId: auth.currentUser.uid,
             title, 
             address, 
             genderPreference, 
@@ -167,7 +168,7 @@ export default function PostJob({ edit, setEdit, jobToBeEdited }){
         }
 
         if (edit) {
-
+            console.log('edit')
             firebaseDeleteJob(jobToBeEdited.postTime)
                 .then(() => {
                     firebasePostJob(job)
@@ -182,10 +183,11 @@ export default function PostJob({ edit, setEdit, jobToBeEdited }){
                 })
 
         } else {
-            
+        console.log(job)
         firebasePostJob(job)
             .catch((error) => {
-                setMessage(error)
+                console.log(error)
+                setMessage('Failed to post a job. Please contact Kindle support')
                 setOpenError(true)
             })
         

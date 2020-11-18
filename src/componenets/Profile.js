@@ -18,6 +18,97 @@ import LocationOnIcon from '@material-ui/icons/LocationOn'
 import GroupIcon from '@material-ui/icons/Group'
 import FavoriteIcon from '@material-ui/icons/Favorite';
 
+const HireWorker = ({ handleHire }) => {
+
+    const useStyles = makeStyles(() => ({
+        personalButtons: {
+            flexGrow: 1,
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-evenly',
+            alignItems: 'flex-end',
+        },
+  
+    }))
+
+    const classes = useStyles()
+
+    return(
+        <div className={classes.personalButtons}>
+        <Button
+            variant='outlined'
+            color='secondary'
+            size='small'
+            onClick={handleHire}
+        >
+            Hire
+        </Button>
+    </div>
+    )
+   
+}
+
+const WorkerProfile = ({ profileUser }) => (
+    <Paper>
+        <Typography>Worker</Typography>
+    </Paper>
+)
+
+const ClientProfile = ({ profileUser }) => {
+    const theme = useTheme()
+
+    const useStyles = makeStyles(() => ({
+        disabilityPaper: {
+            width: '60%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            alignItems: 'flex-start',
+            padding: theme.spacing(2),
+            marginTop: theme.spacing(2),
+            marginBottom: theme.spacing(2)
+        },
+        sectionPadding: {
+            padding: theme.spacing(2) 
+        },
+        elementMargin: {
+            marginTop: theme.spacing(2),
+            marginBottom: theme.spacing(1)
+        }
+
+    }))
+
+    const classes = useStyles()
+
+    return (
+        <Paper className={classes.disabilityPaper}>
+            <Typography variant='subtitle1' color='primary'>Disability</Typography>
+            <div className={classes.sectionPadding}>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Type of disabilityPaper</Typography>
+                <Typography variant='body2' align='justify'>{profileUser.disabilityInfo.disability}</Typography>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Type of support</Typography>
+                <ul>
+                    {profileUser.disabilityInfo.supportType.map((support, i) => (
+                        <li key={i}>{support}</li>
+                    ))}
+                </ul>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Average support time per week</Typography>
+                <Typography variant='body2' align='justify'>{profileUser.disabilityInfo.supportTime}</Typography>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Support worker gender preference</Typography>
+                <Typography variant='body2' align='justify'>{profileUser.disabilityInfo.genderPreference}</Typography>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Positive behaviour support</Typography>
+                <Typography variant='body2' align='justify'>{profileUser.disabilityInfo.behaviourSupport}</Typography>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Support worker to use restrictive practices</Typography>
+                <Typography variant='body2' align='justify'>{profileUser.disabilityInfo.restrictivePractices}</Typography>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Prescribed medication</Typography>
+                <Typography variant='body2' align='justify'>{profileUser.disabilityInfo.medication}</Typography>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Support worker to administer medication</Typography>
+                <Typography variant='body2' align='justify'>{profileUser.disabilityInfo.administerMedication}</Typography>
+            </div>
+        </Paper>
+    )
+}
 
 export default function Profile({ history, match }) {
 
@@ -33,7 +124,10 @@ export default function Profile({ history, match }) {
 
     useEffect(() => {
         firebaseGetUserInfo(match.params.id)
-            .then((userInfo) => setProfileUser(userInfo))
+            .then((userInfo) => {
+                console.log(userInfo)
+                setProfileUser(userInfo)
+            })
             .catch((error) => {
                 setMessage('Error retrieving user info. Please contact Kindle support')
                 setOpenError(true)
@@ -52,6 +146,13 @@ export default function Profile({ history, match }) {
         },
         margin: {
             margin: theme.spacing(1)
+        },
+        sectionPadding: {
+            padding: theme.spacing(2) 
+        },
+        elementMargin: {
+            marginTop: theme.spacing(2),
+            marginBottom: theme.spacing(1)
         },
         personalPaper: {
             width: '60%', 
@@ -118,7 +219,7 @@ export default function Profile({ history, match }) {
     }
 
     const handleHire = () => {
-
+        console.log('handleHire')
     }
 
    
@@ -147,42 +248,34 @@ export default function Profile({ history, match }) {
                                             <IconButton>
                                             <GroupIcon fontSize="small" color='secondary' />
                                             </IconButton>
-                                            
                                         </Tooltip>
                                         <Typography variant='caption' color='primary'>{moment(new Date(profileUser.membership)).format("DD/MM/YYYY")}</Typography>
                                     </div>
                                 </div>
-                                <div className={classes.personalButtons}>
-                                    <Button 
-                                        variant='outlined' 
-                                        color='secondary'
-                                        size='small'
-                                        onClick={handleHire}
-                                    >
-                                        Hire
-                                    </Button>
-                                    <Tooltip title='Add to your shortlist'>
-                                        <FavoriteIcon fontSize="large" color='secondary' style={{marginRight: theme.spacing(1)}}/>
-                                    </Tooltip>
-                                </div>
+                                {
+                                    // profileUser.type === 'worker' && user.email !== profileUser.email
+                                    profileUser.type === 'worker'
+                                    ? <HireWorker handleHire={handleHire}/>
+                                    : null
+                                }
+                                
                             </Paper>
-
                             <Paper className={classes.aboutPaper}> 
                                 <Typography variant='subtitle1' color='primary'>About</Typography>
-                                <div style={{padding: theme.spacing(2)}}>
-                                    <Typography variant='subtitle2' color='primary' style={{marginTop: theme.spacing(2), marginBottom: theme.spacing(1)}}>Biograpghy</Typography>
-                                    <Typography variant='body' align='justify'>{profileUser.biograpghy}</Typography>
-                                    <Typography variant='subtitle2' color='primary' style={{marginTop: theme.spacing(2), marginBottom: theme.spacing(1)}}>Place of birth</Typography>
-                                    <Typography variant='body' >{profileUser.birthCountry}</Typography>
-                                    <Typography variant='subtitle2' color='primary' style={{marginTop: theme.spacing(2), marginBottom: theme.spacing(1)}}>Gender</Typography>
-                                    <Typography variant='body'>{profileUser.gender}</Typography>
-                                    <Typography variant='subtitle2' color='primary' style={{marginTop: theme.spacing(2), marginBottom: theme.spacing(1)}}>Languages</Typography>
+                                <div className={classes.sectionPadding}>
+                                    <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Biograpghy</Typography>
+                                    <Typography variant='body2' align='justify'>{profileUser.biograpghy}</Typography>
+                                    <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Place of birth</Typography>
+                                    <Typography variant='body2' >{profileUser.birthCountry}</Typography>
+                                    <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Gender</Typography>
+                                    <Typography variant='body2'>{profileUser.gender}</Typography>
+                                    <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Languages</Typography>
                                     <ul>
                                         {profileUser.languages.map((language, i) => (
                                             <li key={i}>{language}</li>
                                         ))}
                                     </ul>
-                                    <Typography variant='subtitle2' color='primary' style={{marginTop: theme.spacing(2), marginBottom: theme.spacing(1)}}>Interests and hobbies</Typography>
+                                    <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Interests and hobbies</Typography>
                                     <ul>
                                         {['Soccer', 'Surfing', 'Chess', 'Watching movies'].map((language, i) => (
                                             <li key={i}>{language}</li>
@@ -190,8 +283,11 @@ export default function Profile({ history, match }) {
                                     </ul>
                                 </div>
                             </Paper>
-
-                            
+                            {
+                                profileUser.type === 'client'
+                                ? <ClientProfile profileUser={profileUser}/>
+                                : <WorkerProfile profileUser={profileUser}/>
+                            }
                             <Snackbar open={openError} autoHideDuration={6000} onClose={handleErrorClose}>
                                 <Alert onClose={handleErrorClose} severity='error'>
                                     {message}
