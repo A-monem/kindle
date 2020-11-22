@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Button, Typography, Paper, RadioGroup, Radio, FormLabel, TextField, FormControlLabel, Snackbar, 
-    Checkbox, Link, Box} from '@material-ui/core'
+import {
+    Button, Typography, Paper, RadioGroup, Radio, TextField, FormControlLabel, Snackbar,
+    Checkbox, Link, Box
+} from '@material-ui/core'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import Alert from '@material-ui/lab/Alert';
-import { firebaseAddUser, firebaseSendVerificationEmail} from '../api/Firebase'
+import { firebaseAddUser, firebaseSendVerificationEmail } from '../api/Firebase'
+import { strings } from '../constants'
 
-export default function Signup({ history }) {
+export default function Signup() {
     const theme = useTheme()
     const [type, setType] = useState(null)
     const [firstName, setFirstName] = useState(null)
@@ -52,27 +55,24 @@ export default function Signup({ history }) {
 
     const classes = useStyles()
 
- 
     const handleFormSubmit = () => {
-        
+
         const status = checkFields()
 
-        if(status) {
+        if (status) {
             const complete = false
             firebaseAddUser(type, firstName, lastName, email, password, complete)
                 .then(() => {
-                    console.log('success')
                     resetFields()
                     setShowForm(false)
                 })
                 .catch(e => {
-                    console.log('Error', e)
                     setErrorMessage(e.message)
                     setOpen(true)
                 })
         }
     }
-    
+
     const handleAlertClose = (event, reason) => {
         if (reason === 'clickaway') {
             return;
@@ -81,8 +81,8 @@ export default function Signup({ history }) {
     };
 
     const checkFields = () => {
-    
-        if (type === null){
+
+        if (type === null) {
 
             setAccountTypeBoxProps({
                 borderColor: 'red',
@@ -90,26 +90,26 @@ export default function Signup({ history }) {
                 border: 1,
             })
 
-            if (agreement === false){
-               
+            if (agreement === false) {
+
                 setAgreementBoxProps({
                     borderColor: 'red',
                     p: 1,
                     border: 1,
                 })
             }
-            setErrorMessage('Please fill in all fields and make sure to agree on terms of use and privacy policy')
+            setErrorMessage(strings.signup_error)
             setOpen(true);
             return false
 
-        } else if (agreement === false){
+        } else if (agreement === false) {
 
             setAgreementBoxProps({
                 borderColor: 'red',
                 p: 1,
                 border: 1,
             })
-            setErrorMessage('Please fill in all fields and make sure to agree on terms of use and privacy policy')
+            setErrorMessage(strings.signup_error)
             setOpen(true);
             return false
         } else {
@@ -137,9 +137,9 @@ export default function Signup({ history }) {
                     ?
                     <>
                         <Typography variant="h6" color='primary'>
-                        Welcome to Kindle
+                            Welcome to Kindle
                         </Typography>
-                        
+
                         <form onSubmit={e => e.preventDefault() && false} className={classes.form}>
                             <Typography variant="h6" className={classes.margin} >
                                 Sign Up
@@ -193,29 +193,29 @@ export default function Signup({ history }) {
                                 label="Password"
                                 type="password"
                                 id="password"
-                                
+
                                 onChange={e => setPassword(e.target.value)}
                             />
                             <Box borderRadius={3} {...agreementBoxProps}>
                                 <FormControlLabel
                                     className={classes.margin}
-                                    control={<Checkbox value={true} color="primary" 
-                                    onChange={(e) => {
-                                        setAgreementBoxProps({})
-                                        setAgreement(e.target.checked)
+                                    control={<Checkbox value={true} color="primary"
+                                        onChange={(e) => {
+                                            setAgreementBoxProps({})
+                                            setAgreement(e.target.checked)
                                         }}
                                     />}
-                                    label="I confirm that I, as the account holder, am over 18 years of age and have read and agree with Kindle’s Terms of Use and Privacy Policy."
+                                    label={strings.signup_confirmation}
                                 />
                             </Box>
                             <Typography variant="caption" display="block" gutterBottom>
                                 Read Kindle’s&nbsp;
-                            <Link href="/terms" target = "_blank" color="primary">
-                                Terms of Use
+                            <Link href="/terms" target="_blank" color="primary">
+                                    Terms of Use
                             </Link>
                             &nbsp;and&nbsp;
-                            <Link href="/privacy" target = "_blank" color="primary">
-                                Privacy Policy
+                            <Link href="/privacy" target="_blank" color="primary">
+                                    Privacy Policy
                             </Link>
                             .
                             </Typography>
@@ -233,7 +233,7 @@ export default function Signup({ history }) {
                     :
                     <>
                         <Typography variant="h6" color='primary'>
-                        Thank you for signing up!
+                            Thank you for signing up!
                         </Typography>
                         <Typography variant="caption" display="block" gutterBottom className={classes.margin}>
                             A verification mail has been sent to your email address. Please check your inbox or junk mail to verify

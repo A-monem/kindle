@@ -31,7 +31,7 @@ class Address extends React.Component {
         const AddressFinder = window.AddressFinder
         this.widget = new AddressFinder.Widget(
         document.getElementById('address_line_1'),
-        '3V8QKPFBJYDNHLU679RE',
+        process.env.REACT_APP_ADDRESS_KEY,
         'AU'
       );
       this.widget.on('result:select', (fullAddress, metaData) => {

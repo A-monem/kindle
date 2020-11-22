@@ -30,7 +30,7 @@ export default function WorkerRegistrationStepTwo({ activeStep, setActiveStep })
     const [agePreference, setAgrePreference] = useState([])
     const ageGroupsOptions = ['Adults', 'Teenagers', 'Children']
     const [workType, setWorkType] = useState([])
-    const workTypeOptions = ['ongoing', 'occasional']
+    const workTypeOptions = ['Ongoing', 'Once off']
     const [workAvailability, setWorkAvailability] = useState([])
     const workAvailabilityOptions = ['Weekdays', 'Evenings', 'Weekends']
     const [travelType, setTravelType] = useState('')

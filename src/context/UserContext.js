@@ -5,7 +5,6 @@ export const UserContext = createContext()
 
 export default class UserContextProvider extends Component{
 
-
     constructor() {
         super();
         
@@ -16,53 +15,11 @@ export default class UserContextProvider extends Component{
             removeMessageBadge: true
         };
 
-        this.unsubscribe = null
-    }
-
-
-    componentDidMount(){
-
-        if (this.state.user) {
-
-            // let queryId = ''
-
-            // if (this.state.user.type === 'client') {
-            //   queryId = 'clientId'
-            // } else if ((this.state.user.type === 'worker')) {
-            //   queryId = 'workerId'
-            // }
-
-            // this.unsubscribe = firestore.collection('messages').where( queryId ,'==', auth.currentUser.uid)
-            //     .onSnapshot((snapshot) => {
-            //         snapshot.docChanges().forEach((change) => {
-
-            //             if (change.type === "added") {
-            //                 console.log("add", change.doc.data());
-            //                 // const message = change.doc.data()
-            //                 // if (message.status === 'new' && message.messages[message.messages.length-1].sender !== this.state.user.type){
-            //                 //     this.setMessageBadge(false)
-            //                 // }
-            //             }
-            //             if (change.type === "modified") {
-            //                 console.log("modified", change.doc.data())
-            //                 this.setMessageBadge(false)
-            //             }
-            //             if (change.type === "removed") {
-            //                 console.log("Remove: ", change.doc.data());
-            //             }
-            //         });
-            //     })
-        }
-
-        // messaging.onMessage((payload) => {
-        //     console.log('Message received. ', payload);
-        // });
-
-        // firebaseGetToken()
+        this.unsubscribeMessages = null
     }
 
     componentWillUnmount(){
-        this.unsubscribe()
+        this.unsubscribeMessages()
 
         this.setState({
             user: null,
@@ -91,7 +48,7 @@ export default class UserContextProvider extends Component{
                 otherUserId = 'clientId'
             }
 
-            this.unsubscribe = firestore.collection('messages').where( queryId ,'==', auth.currentUser.uid)
+            this.unsubscribeMessages = firestore.collection('messages').where( queryId ,'==', auth.currentUser.uid)
                 .onSnapshot((snapshot) => {
                     snapshot.docChanges().forEach((change) => {
 
@@ -157,7 +114,7 @@ export default class UserContextProvider extends Component{
                 })
         } else {
 
-            this.unsubscribe()
+            this.unsubscribeMessages()
 
             this.setState({
                 user: null,

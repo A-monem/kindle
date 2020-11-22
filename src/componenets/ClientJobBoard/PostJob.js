@@ -274,7 +274,7 @@ export default function PostJob({ edit, setEdit, jobToBeEdited }){
                 <Typography variant='subtitle1' color='primary' className={classes.margin}>Job Type</Typography>
                 <RadioGroup onChange={(e) => setJobType(e.target.value)} value={jobType}>
                     <FormControlLabel value='Ongoing' control={<Radio color='primary' required />} label='Ongoing' />
-                    <FormControlLabel value='Once off' control={<Radio color='primary' required />} label='Once off' />
+                    <FormControlLabel value='Once' control={<Radio color='primary' required />} label='Once off' />
                 </RadioGroup>
                 <Typography variant='subtitle1' color='primary' className={classes.margin}>Describe the support activities in detail</Typography>
                 <TextField

@@ -1,6 +1,6 @@
-import React, { Component, useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import {
-    Button, Typography, Paper, FormLabel, TextField, Snackbar, Checkbox, IconButton, MenuItem,
+    Button, Typography, Paper, TextField, Snackbar, IconButton, MenuItem,
     Icon, TableContainer, Table, TableHead, TableRow, TableCell, TableBody,
 } from '@material-ui/core'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
@@ -12,6 +12,7 @@ import { MuiPickersUtilsProvider, KeyboardTimePicker, KeyboardDatePicker } from 
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever'
 import moment from 'moment'
 import { firebaseSendOffer, auth} from '../api/Firebase'
+import { arrays, strings } from '../constants'
 
 
 export default function ApplyJob({ job, setOpenApplyModal }) {
@@ -25,14 +26,10 @@ export default function ApplyJob({ job, setOpenApplyModal }) {
     const [dateSelected, setDateSelected] = useState(new Date())
     const [fromTime, setFromTime] = useState(new Date())
     const [toTime, setToTime] = useState(new Date())
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    const days = arrays.days
 
     const theme = useTheme()
     const { user } = useContext(UserContext)
-
-    useEffect(() => {
-
-    }, [])
 
     const useStyles = makeStyles(() => ({
         root: {
@@ -79,7 +76,6 @@ export default function ApplyJob({ job, setOpenApplyModal }) {
             flexDirection: 'row',
             justifyContent: 'space-evenly',
             alignItems: 'center',
-            //width: '100%', 
         }
 
     }))
@@ -137,7 +133,7 @@ export default function ApplyJob({ job, setOpenApplyModal }) {
             setToTime(new Date())
 
         } else {
-            setMessage('Please select a day and time before adding')
+            setMessage(strings.applyjob_error)
             setOpenError(true)
         }
     }
@@ -164,23 +160,26 @@ export default function ApplyJob({ job, setOpenApplyModal }) {
                     avatar: user.avatar,
                     rate, 
                     particularSupportTime,
-                    status: 'Pending', 
+                    status: strings.pending, 
                     workerId: auth.currentUser.uid
                 }
 
-                console.log(job)
+                try{
+                    firebaseSendOffer(job.jobId, offer)
+                        .then(() => {
+                            setMessage('Offer sent')
+                            setOpenSuccess(true)
+                            setOpenApplyModal(false)
+                        })
+                        .catch((error) => {
+                            setMessage(strings.offer_send_error)
+                            setOpenError(true)
+                        })
 
-                firebaseSendOffer(job.jobId, offer)
-                    .then((job) => {
-                        setMessage('Offer sent')
-                        setOpenSuccess(true)
-                        setOpenApplyModal(false)
-                    })
-                    .catch((error) => {
-                        setMessage('Error sending offer. Please contact Kindle support')
-                        setOpenError(true)
-                    })
+                } catch (error) {
 
+                }
+                
             }
         }
     }

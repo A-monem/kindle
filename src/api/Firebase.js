@@ -85,8 +85,10 @@ export const firebaseAddUser = (type, firstName, lastName, email, password, comp
       })
       .then(() => firestore.collection('timetables').doc(auth.currentUser.uid).set({
         Ongoing: [],
-        OnceOff: []
+        Once: []
       }))
+      .then(() => firestore.collection('timesheets').doc(auth.currentUser.uid).set({}))
+      .then(() => firestore.collection('reviews').doc(auth.currentUser.uid).set({}))
       .then(() => {
         auth.currentUser.updateProfile({
           displayName: `${firstName} ${lastName}`
@@ -189,7 +191,22 @@ export const firebaseGetUserInfo = (id) => {
       .then((info) => {
         resolve(info.data())
       })
-      .catch(error => console.log(error.message))
+      .catch(error => reject(error))
+  })
+}
+
+export const firebaseGetAllUsers = (userType) => {
+  return new Promise((resolve, reject) => {
+    firestore.collection('users').where('type', '!=', userType).get()
+      .then((snapshot) => {
+          let users = []
+          snapshot.forEach((doc) => users.push({
+            id: doc.id,
+            data: doc.data()
+          }))
+          resolve(users)
+      })
+      .catch(error => reject(error))
   })
 }
 
@@ -227,20 +244,6 @@ export const firebaseGetTimetable = () => {
   })
 }
 
-export const firebaseSetTimetable = (timetable) => {
-  return new Promise((resolve, reject) => {
-    firestore.collection('users').doc(auth.currentUser.uid).get()
-    .then((info) => {
-      let user = info.data()
-      user['timetable'] = timetable
-      firestore.collection('users').doc(auth.currentUser.uid).set(user)
-        .then(() => resolve(user))
-        .catch(error => reject(error.message))
-    })
-    .catch(error => reject(error.message))
-  })
-}
-
 export const firebaseAddEventToTimetable = (event, eventType, user) => {
   return new Promise((resolve, reject) => {
     
@@ -271,7 +274,6 @@ export const firebaseAddEventToTimetable = (event, eventType, user) => {
                 let timetable = info.data()
                 job.name = `${user.firstName} ${user.lastName}`
                 job.avatar = user.avatar
-                console.log(job)
                 timetable[eventType].push(job)
                 firestore.collection('timetables').doc(event.workerId).set(timetable)
               })

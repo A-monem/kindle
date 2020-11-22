@@ -1,11 +1,12 @@
 import React, { useContext, useState, useEffect } from 'react'
-import { Button, TextField, FormControlLabel, Checkbox, Snackbar,
-    Link, Paper, Box, Grid, Typography, Switch} from '@material-ui/core'
+import {
+    Button, TextField, FormControlLabel, Checkbox, Snackbar,
+    Link, Paper, Box, Grid, Typography
+} from '@material-ui/core'
 import Alert from '@material-ui/lab/Alert';
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { UserContext } from '../context/UserContext'
 import { firebaseLogin } from '../api/Firebase'
-import { add } from 'date-fns';
 
 function Copyright() {
     return (
@@ -22,18 +23,13 @@ function Copyright() {
 
 export default function Signin({ history }) {
 
-    const [email, setEmail] = useState('abdulmonemamin@hotmail.com')
+    const [email, setEmail] = useState('aamnafea@hotmail.com')
     const [password, setPassword] = useState('Banana101')
     const [open, setOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState('')
     const [disable, setDisable] = useState(false)
 
-    useEffect(() => {
-        // console.log(auth.currentUser)
-        // console.log(auth.Presistance)
-    }, [])
-
-    const { addUser, addPassword, addJobs } = useContext(UserContext)
+    const { addUser, addPassword } = useContext(UserContext)
     const theme = useTheme()
 
     const useStyles = makeStyles(() => ({
@@ -64,7 +60,7 @@ export default function Signin({ history }) {
             marginTop: theme.spacing(3),
         },
         form: {
-            width: '100%', // Fix IE 11 issue.
+            width: '100%', 
             marginTop: theme.spacing(1),
         },
         submit: {

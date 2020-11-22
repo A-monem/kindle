@@ -1,7 +1,5 @@
-import React, { useState } from 'react'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
+import React from 'react'
 import { Map, Marker, GoogleApiWrapper } from 'google-maps-react'
-import { set } from 'date-fns'
 
 let lat, long
 
@@ -11,8 +9,6 @@ export const setCoordinates = (latValue, longValue) => {
 }
 
 const EmbeddedMap = (props) => {
-    // const [lat, setLat] = useState(null)
-    // const [long, setLong] = useState(null)
 
     return (
        <Map 

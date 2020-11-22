@@ -1,22 +1,16 @@
-import React, { Component, useState, useEffect, useContext } from 'react';
-import {
-    Button, Typography, Paper, FormLabel, TextField, Snackbar, Checkbox, IconButton, MenuItem,
-    Icon, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Avatar, CircularProgress, Tooltip, 
-} from '@material-ui/core'
+import React, { useState, useEffect, useContext } from 'react';
+import { Button, Typography, Paper, Snackbar, IconButton, Avatar, CircularProgress, Tooltip } from '@material-ui/core'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import Alert from '@material-ui/lab/Alert';
 import { UserContext } from '../context/UserContext'
 import 'date-fns';
-import DateFnsUtils from '@date-io/date-fns';
-import { MuiPickersUtilsProvider, KeyboardTimePicker, KeyboardDatePicker } from '@material-ui/pickers';
-import DeleteForeverIcon from '@material-ui/icons/DeleteForever'
 import moment from 'moment'
 import { Redirect } from "react-router-dom"
 import Registration from './Registration'
-import { auth, firebaseGetUserInfo} from '../api/Firebase'
+import { firebaseGetUserInfo} from '../api/Firebase'
 import LocationOnIcon from '@material-ui/icons/LocationOn'
 import GroupIcon from '@material-ui/icons/Group'
-import FavoriteIcon from '@material-ui/icons/Favorite';
+import { strings } from '../constants'
 
 const HireWorker = ({ handleHire }) => {
 
@@ -49,11 +43,87 @@ const HireWorker = ({ handleHire }) => {
    
 }
 
-const WorkerProfile = ({ profileUser }) => (
-    <Paper>
-        <Typography>Worker</Typography>
-    </Paper>
-)
+const WorkerProfile = ({ profileUser }) => {
+    
+    const theme = useTheme()
+
+    const useStyles = makeStyles(() => ({
+        workerPaper: {
+            width: '60%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            alignItems: 'flex-start',
+            padding: theme.spacing(2),
+            marginTop: theme.spacing(2),
+        },
+        badgePaper: {
+            width: '60%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            alignItems: 'flex-start',
+            padding: theme.spacing(2),
+            marginTop: theme.spacing(2),
+            marginBottom: theme.spacing(2)
+        },
+        sectionPadding: {
+            padding: theme.spacing(2) 
+        },
+        elementMargin: {
+            marginTop: theme.spacing(2),
+            marginBottom: theme.spacing(1)
+        }
+
+    }))
+
+    const classes = useStyles()
+
+    return(
+        <>
+        <Paper className={classes.workerPaper}>
+            <Typography variant='subtitle1' color='primary'>Support work</Typography>
+            <div className={classes.sectionPadding}>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Availability</Typography>
+                <ul>
+                    {profileUser.work.workAvailability.map((availability, i) => (
+                        <li key={i}>{availability}</li>
+                    ))}
+                </ul>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Type of support</Typography>
+                <ul>
+                    {profileUser.work.supportType.map((support, i) => (
+                        <li key={i}>{support}</li>
+                    ))}
+                </ul>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Work type</Typography>
+                <ul>
+                    {profileUser.work.workType.map((type, i) => (
+                        <li key={i}>{type}</li>
+                    ))}
+                </ul>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Gender preference</Typography>
+                <Typography variant='body2' align='justify'>{profileUser.work.genderPreference}</Typography>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Age preference</Typography>
+                <ul>
+                    {profileUser.work.agePreference.map((age, i) => (
+                        <li key={i}>{age}</li>
+                    ))}
+                </ul>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Hold unrestricted licence</Typography>
+                <Typography variant='body2' align='justify'>{profileUser.work.drivingLicence}</Typography>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Willing to drive own car</Typography>
+                <Typography variant='body2' align='justify'>{profileUser.work.drivingOwnCar}</Typography>
+                <Typography variant='subtitle2' color='primary' className={classes.elementMargin}>Willing to drive your client's car</Typography>
+                <Typography variant='body2' align='justify'>{profileUser.work.drivingClientCar}</Typography>
+            </div>
+        </Paper>
+         <Paper className={classes.checkPaper}>
+
+         </Paper>
+         </>
+    )
+}
 
 const ClientProfile = ({ profileUser }) => {
     const theme = useTheme()
@@ -117,21 +187,27 @@ export default function Profile({ history, match }) {
     const [message, setMessage] = useState('')
     const [profileUser, setProfileUser] = useState('')
 
-
     const theme = useTheme()
     
     const { user } = useContext(UserContext)
 
     useEffect(() => {
-        firebaseGetUserInfo(match.params.id)
+        console.log(match.params.id)
+        try{
+            firebaseGetUserInfo(match.params.id)
             .then((userInfo) => {
                 console.log(userInfo)
                 setProfileUser(userInfo)
             })
             .catch((error) => {
-                setMessage('Error retrieving user info. Please contact Kindle support')
+                setMessage(strings.profile_fetch_user_error)
                 setOpenError(true)
             })
+        } catch (error) {
+            setMessage(strings.profile_fetch_user_error)
+            setOpenError(true)
+        }
+        
     }, [])
 
     const useStyles = makeStyles(() => ({
@@ -223,12 +299,12 @@ export default function Profile({ history, match }) {
     }
 
    
-    // if (!user) {
-    //     return <Redirect to={'/signin'} />
-    // } else {
-    //     if (!user.complete) {
-    //         return <Registration history={history}/>
-    //     } else {
+    if (!user) {
+        return <Redirect to={strings.signin_url} />
+    } else {
+        if (!user.complete) {
+            return <Registration history={history}/>
+        } else {
             return (
                 <div className={classes.root}>
                     {profileUser
@@ -246,15 +322,14 @@ export default function Profile({ history, match }) {
                                     <div className={classes.personalIcon}>
                                         <Tooltip title="Membership date">
                                             <IconButton>
-                                            <GroupIcon fontSize="small" color='secondary' />
+                                                <GroupIcon fontSize="small" color='secondary' />
                                             </IconButton>
                                         </Tooltip>
                                         <Typography variant='caption' color='primary'>{moment(new Date(profileUser.membership)).format("DD/MM/YYYY")}</Typography>
                                     </div>
                                 </div>
                                 {
-                                    // profileUser.type === 'worker' && user.email !== profileUser.email
-                                    profileUser.type === 'worker'
+                                     profileUser.type === 'worker' && user.email !== profileUser.email
                                     ? <HireWorker handleHire={handleHire}/>
                                     : null
                                 }
@@ -301,11 +376,10 @@ export default function Profile({ history, match }) {
                         </>
 
                         : <CircularProgress color="secondary" />
-
                     }
                    
                 </div>
             )
         }
-//     }
-// }
+    }
+}

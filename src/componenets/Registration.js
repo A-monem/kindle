@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import { UserContext } from '../context/UserContext'
-import { Typography, Stepper, Step, StepLabel, Button, Paper } from '@material-ui/core'
+import { Stepper, Step, StepLabel, Paper } from '@material-ui/core'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import ClientRegistrationStepOne from './ClientRegistration/ClientRegistrationStepOne'
 import ClientRegistrationStepTwo from './ClientRegistration/ClientRegistrationStepTwo'
@@ -14,6 +14,7 @@ import WorkerRegistrationStepFour from './WorkerRegistration/WorkerRegistrationS
 import WorkerRegistrationStepFive from './WorkerRegistration/WorkerRegistrationStepFive'
 import WorkerRegistrationStepSix from './WorkerRegistration/WorkerRegistrationStepSix'
 import WorkerRegistrationStepSeven from './WorkerRegistration/WorkerRegistrationStepSeven'
+import { strings, arrays } from '../constants'
 
 export default function Registration({ history }) {
     const [activeStep, setActiveStep] = React.useState(0);
@@ -53,8 +54,10 @@ export default function Registration({ history }) {
             Height: '100%',
             marginTop: theme.spacing(2)
         },
-        stepsCompleted: {
-
+        stepper: {
+            width: '100%', 
+            padding: 0, 
+            margin: 0 
         }
     }))
 
@@ -62,20 +65,16 @@ export default function Registration({ history }) {
 
     const getSteps = () => {
         return(
-            user.type === 'client' 
-            ? ['Personal Information', 'Disability information', 'Referee', 'Financial Information', 'Agreement']
-            : ['Personal Information', 'Support work', 'Qualification', 'Referee', 'Financial Information', 'Upload Documents', 'Agreement']
+            user.type === strings.client
+            ? arrays.client_Registration
+            : arrays.worker_Registration
         )
     }
 
     const steps = getSteps();
 
-    const handleReset = () => {
-        setActiveStep(0);
-    };
-
     const getStepContent = (stepIndex) => {
-        if (user.type === 'client'){
+        if (user.type === strings.client){
             switch (stepIndex) {
                 case 0:
                     return <ClientRegistrationStepOne activeStep={activeStep} setActiveStep={setActiveStep}/>
@@ -88,7 +87,7 @@ export default function Registration({ history }) {
                 case 4:
                     return <ClientRegistrationStepFive activeStep={activeStep} setActiveStep={setActiveStep} history={history}/>
                 default:
-                    return 'Unknown stepIndex';
+                    return strings.unkown_step
             }
         } else {
             switch (stepIndex) {
@@ -107,7 +106,7 @@ export default function Registration({ history }) {
                 case 6:
                     return <WorkerRegistrationStepSeven activeStep={activeStep} setActiveStep={setActiveStep} history={history}/>
                 default:
-                    return 'Unknown stepIndex';
+                    return strings.unkown_step
             }
         }
     }
@@ -115,7 +114,7 @@ export default function Registration({ history }) {
     return (
         <div className={classes.root}>
             <Paper className={classes.paper}>
-                <Stepper style={{ width: '100%', padding: 0, margin: 0 }} activeStep={activeStep} alternativeLabel>
+                <Stepper className={classes.stepper} activeStep={activeStep} alternativeLabel>
                     {steps.map((label) => (
                         <Step key={label}>
                             <StepLabel>{label}</StepLabel>

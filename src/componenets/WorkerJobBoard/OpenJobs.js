@@ -170,7 +170,7 @@ export default function OpenJobs({ setEdit, setJobId }){
 
     return (
         <div className={classes.root}>
-            <Typography variant='h6' color='primary' className={classes.margin} gutterBottom>Open Jobs</Typography>
+            <Typography variant='h6' className={classes.margin} gutterBottom>Open Jobs</Typography>
             {openJobs.map((job, i) => (
                 <div key={i} className={classes.card} id={`openJobsCard${i}`}>
                     <Card variant="outlined" >
