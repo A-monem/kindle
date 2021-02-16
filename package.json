@@ -19,14 +19,17 @@
     "firebase": "^7.21.0",
     "google-maps-react": "^2.0.6",
     "language-list": "0.0.3",
+    "lottie-react-web": "^2.2.2",
     "moment": "^2.29.1",
+    "prop-types": "^15.7.2",
     "random-id": "^1.0.4",
     "react": "^16.13.1",
     "react-dark-mode-toggle": "0.0.9",
     "react-dom": "^16.13.1",
     "react-icons": "^3.11.0",
+    "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "3.4.3",
+    "react-scripts": "^4.0.1",
     "react-scroll-to-bottom": "^4.0.0",
     "react-transition-group": "^4.4.1"
   },
@@ -50,5 +53,14 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.17.0",
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.22.0",
+    "eslint-plugin-react-hooks": "^4.2.0"
   }
 }
