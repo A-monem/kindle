@@ -59,6 +59,7 @@ export const arrays = {
   client_Registration: ['Personal Information', 'Disability information', 'Referee', 'Financial Information', 'Agreement'],
   worker_Registration: ['Personal Information', 'Support work', 'Qualification', 'Referee', 'Financial Information', 'Upload Documents', 'Agreement'],
   days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+  times: ['Morning', 'Afternoon', 'Evening'],
   supportTimeEachWeekArray: ['0 - 5 hours per week', '6 - 10 hours per week', '11 - 15 hours per week',
     '16 - 20 hours per week', '21 - 25 hours per week', '26 - 30 hours per week', '30+ hours per week'],
   supportTypeArray: [{ title: 'Help around the house', toolTip: 'Help around the house is important for you to be able to remain independently at home. This might include help in the graden, home-office duties and keeping the house tidy by assisting with laundry, taking out the rubbish or feeding pets.' },

@@ -43,6 +43,11 @@ export default class ThemeContextProvider extends Component {
               fontSize: '0.8rem',
             },
           },
+          // caption: {
+          //   '@media (max-width:960px)': {
+          //     fontSize: '0.8rem',
+          //   },
+          // },
           fontFamily: ['Open Sans',
             'Roboto'],
         },

@@ -29,26 +29,6 @@ export const auth = firebase.auth()
 export const firestore = firebase.firestore()
 export const storage = firebase.storage()
 export const messaging = firebase.messaging()
-
-// export const firebaseGetToken = () => {
-//   Notification.requestPermission()
-//     .then((permission) => {
-//       console.log(permission)
-
-//       messaging.getToken({ vapidKey: 'BMfUY_D1iYZp0oJHFjTfkosgBzBD6qPl8N5pr1ugMpoAoxcB770zvG2LjadkiEOzdDYtB3yAjouF-kVVUfdkqEA' })
-//         .then((token) => {
-//           console.log(token)
-
-//           // messaging.onBackgroundMessage(function(payload) {
-//           //   console.log('[firebase-messaging-sw.js] Received background message ', payload);
-
-//           // });
-//         })
-//         .catch((error) => console.log(error.message))
-//     })
-//     .catch((error) => console.log(error.message))
-// }
-
 export const firebaseRecaptchaGenerator = () => {
   window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container')
   window.recaptchaVerifier.render()
@@ -217,7 +197,7 @@ export const firebaseGetTimetable = () => new Promise((resolve, reject) => {
       // once off & ongoing
       resolve(timetable)
     })
-    .catch((error) => reject(error.message))
+    .catch((error) => reject(error))
 })
 
 export const firebaseAddEventToTimetable = (event, eventType, user) => new Promise((resolve, reject) => {
@@ -229,13 +209,19 @@ export const firebaseAddEventToTimetable = (event, eventType, user) => new Promi
   }
 
   event.particularSupportTime.forEach((supportTime) => {
-    job.time.push({
-      startDate: supportTime.from,
-      endDate: supportTime.to,
-    })
+    if (eventType === 'Once') {
+      job.time.push({
+        startDate: supportTime.from,
+        endDate: supportTime.to,
+      })
+    } else {
+      job.time.push({
+        startDate: supportTime.from,
+        endDate: supportTime.to,
+        day: supportTime.day,
+      })
+    }
   })
-
-  console.log(eventType)
 
   firestore.collection('timetables').doc(auth.currentUser.uid).get()
     .then((info) => {
@@ -254,11 +240,11 @@ export const firebaseAddEventToTimetable = (event, eventType, user) => new Promi
               firestore.collection('timetables').doc(event.workerId).set(timetable)
             })
             .then(() => resolve())
-            .catch((error) => reject(error.message))
+            .catch((error) => reject(error))
         })
-        .catch((error) => reject(error.message))
+        .catch((error) => reject(error))
     })
-    .catch((error) => reject(error.message))
+    .catch((error) => reject(error))
 })
 
 export const firebasePostJob = (job) => new Promise((resolve, reject) => {
@@ -277,7 +263,7 @@ export const firebaseGetJob = (id) => new Promise((resolve, reject) => {
     .then((doc) => {
       resolve(doc.data())
     })
-    .catch((error) => reject(error.message))
+    .catch((error) => reject(error))
 })
 
 export const firebaseDeleteJob = (postTime) => new Promise((resolve, reject) => {
@@ -288,7 +274,7 @@ export const firebaseDeleteJob = (postTime) => new Promise((resolve, reject) => 
       });
     })
     .then(() => resolve())
-    .catch((error) => reject(error.message))
+    .catch((error) => reject(error))
 })
 
 export const firebaseSendOffer = (jobId, offer) => new Promise((resolve, reject) => {
@@ -299,9 +285,9 @@ export const firebaseSendOffer = (jobId, offer) => new Promise((resolve, reject)
       job.offers.push(offer)
       firestore.collection('jobs').doc(jobId).set(job)
         .then(() => resolve(job))
-        .catch((error) => reject(error.message))
+        .catch((error) => reject(error))
     })
-    .catch((error) => reject(error.message))
+    .catch((error) => reject(error))
 })
 
 export const firebaseAcceptOffer = (jobId, index, user) => new Promise((resolve, reject) => {
@@ -330,9 +316,9 @@ export const firebaseAcceptOffer = (jobId, index, user) => new Promise((resolve,
 
       firestore.collection('jobs').doc(jobId).set(job)
         .then(() => resolve(job))
-        .catch((error) => reject(error.message))
+        .catch((error) => reject(error))
     })
-    .catch((error) => reject(error.message))
+    .catch((error) => reject(error))
 })
 
 export const firebaseSendMessage = (message) => new Promise((resolve, reject) => {
@@ -365,9 +351,9 @@ export const firebaseReplyMessage = (id, message) => new Promise((resolve, rejec
       console.log(data)
       firestore.collection('messages').doc(id).set(data)
         .then(() => resolve())
-        .catch((error) => reject(error.message))
+        .catch((error) => reject(error))
     })
-    .catch((error) => reject(error.message))
+    .catch((error) => reject(error))
 })
 
 export const firebaseGetUserMessages = (user) => new Promise((resolve, reject) => {
@@ -400,10 +386,10 @@ export const firebaseGetUserMessages = (user) => new Promise((resolve, reject) =
               resolve(messages)
             }
           })
-          .catch((error) => reject(error.message))
+          .catch((error) => reject(error))
       })
     })
-    .catch((error) => reject(error.message))
+    .catch((error) => reject(error))
 })
 
 export const firebaseSetMessageAsRead = (id) => new Promise((resolve, reject) => {
@@ -415,7 +401,7 @@ export const firebaseSetMessageAsRead = (id) => new Promise((resolve, reject) =>
       firestore.collection('messages').doc(id).set(msg)
         .then(() => resolve())
     })
-    .catch((error) => reject(error.message))
+    .catch((error) => reject(error))
 })
 
 export const firebaseGetWorkerJobs = (id) => new Promise((resolve, reject) => {

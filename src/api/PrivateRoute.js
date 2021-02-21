@@ -2,7 +2,7 @@ import React from 'react'
 import { Route, Redirect } from 'react-router-dom'
 import { useUser } from '../context/UserContext'
 import { strings } from '../constants'
-import Registration from '../componenets/Registration'
+import Registration from '../components/Registration'
 
 function PrivateRoute({ component: Component, ...rest }) {
   const { user } = useUser()
