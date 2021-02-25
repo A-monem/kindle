@@ -59,16 +59,6 @@ export default function ClientJobBoard() {
   }
 
   return (
-    // <Grid container className={classes.root}>
-    //   <Grid item xs={12} md={6}>
-    //     <Paper className={classes.paper} elevation={3}>
-    //       <PostJob edit={edit} setEdit={setEdit} jobToBeEdited={jobToBeEdited} />
-    //     </Paper>
-    //   </Grid>
-    //   <Grid item xs={12} md={6}>
-    //     <OldJobs setEdit={setEdit} setJobToBeEdited={setJobToBeEdited} />
-    //   </Grid>
-    // </Grid>
     <div className={classes.root}>
       <Paper className={classes.paper}>
         <Typography variant="h6" color="primary">Post a job</Typography>

@@ -5,9 +5,10 @@ import {
 } from '@material-ui/core'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import PropTypes from 'prop-types'
+import axios from 'axios'
 import { UserContext } from '../../context/UserContext'
 import { useAlert } from '../../context/AlertContext'
-import { firebaseLogin } from '../../api/Firebase'
+import { firebaseLogin, firebaseGetAllUsers } from '../../api/Firebase'
 
 function Copyright() {
   return (
@@ -78,6 +79,13 @@ function Signin({ history }) {
 
     firebaseLogin(email, password)
       .then((user) => {
+        // firebaseGetAllUsers('worker')
+        //   .then((users) => {
+        //     axios.post('http://localhost:4000/newUser', users)
+        //       .then(() => console.log('success'))
+        //       .catch((error) => console.log(error))
+        //   })
+
         addUser(user)
         history.push('/dashboard')
       })

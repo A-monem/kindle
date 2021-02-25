@@ -67,7 +67,6 @@ function Timetable() {
               Sunday: 7,
             }
 
-            console.log(job)
             job.time.forEach((time) => {
               const startDate = new Date(time.startDate)
               const endDate = new Date(time.endDate)
